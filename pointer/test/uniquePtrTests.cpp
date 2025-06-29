@@ -1,7 +1,8 @@
+#include <boost/test/tools/old/interface.hpp>
 #define BOOST_TEST_MODULE UniquePtrTests
-#include <boost/test/unit_test_suite.hpp>
 #include <PointerLib/uniquePtr.hpp>
 #include <boost/test/unit_test.hpp>
+#include <boost/test/unit_test_suite.hpp>
 
 namespace Moon::Test
 {
@@ -9,8 +10,8 @@ namespace Moon::Test
 struct Dummy
 {
     int value;
-    static int destructorCount;  
-    
+    static int destructorCount;
+
     Dummy(int v) : value(v) {}
     ~Dummy()
     {
@@ -90,6 +91,30 @@ BOOST_AUTO_TEST_CASE(UniquePtrDestructor)
         Moon::UniquePtr<Dummy> ptr2(new Dummy(10));
     }
     BOOST_CHECK(Dummy::destructorCount == 2);
+}
+BOOST_AUTO_TEST_CASE(UniquePtrArrayTest)
+{
+    Moon::UniquePtr<Dummy[]> arr(new Dummy[3]{Dummy(1), Dummy(2), Dummy(3)});
+    BOOST_CHECK(arr.Get() != nullptr);
+    BOOST_CHECK_EQUAL(arr[0].value, 1);
+    BOOST_CHECK_EQUAL(arr[1].value, 2);
+    BOOST_CHECK_EQUAL(arr[2].value, 3);
+
+    arr.Reset();
+    BOOST_CHECK_EQUAL(Dummy::destructorCount, 3);
+    BOOST_CHECK(arr.Get() == nullptr);
+}
+
+BOOST_AUTO_TEST_CASE(UniquePtrBoolCast)
+{
+    Moon::UniquePtr<Dummy> dummy1;
+    Moon::UniquePtr<Dummy[]> dummy2;
+    BOOST_CHECK(dummy1 == false);
+    BOOST_CHECK(dummy2 == false);
+    dummy1.Reset(new Dummy(5));
+    dummy2.Reset(new Dummy[3]{Dummy(1), Dummy(2), Dummy(3)});
+    BOOST_CHECK(dummy1 == true);
+    BOOST_CHECK(dummy2 == true);
 }
 BOOST_AUTO_TEST_SUITE_END()
 
