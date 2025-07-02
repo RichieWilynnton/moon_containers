@@ -1,3 +1,6 @@
-add_static_library(MoonStack
+add_static_library(StackLib
     stack.cpp 
+)
+depend_and_link(StackLib
+    PointerLib
 )
