@@ -12,6 +12,7 @@ struct Dummy
     int value;
     static int destructorCount;
 
+    Dummy() : value(0) {}
     Dummy(int v) : value(v) {}
     ~Dummy()
     {
@@ -80,7 +81,6 @@ BOOST_AUTO_TEST_CASE(UniquePtrConstructor)
     Dummy* dummy = new Dummy(10);
     Moon::UniquePtr<Dummy> ptr1(dummy);
 
-    BOOST_CHECK(dummy == nullptr);
     BOOST_CHECK(ptr1.Get() != nullptr);
     BOOST_CHECK_EQUAL(ptr1->value, 10);
 }
@@ -116,6 +116,21 @@ BOOST_AUTO_TEST_CASE(UniquePtrBoolCast)
     BOOST_CHECK(dummy1 == true);
     BOOST_CHECK(dummy2 == true);
 }
+BOOST_AUTO_TEST_CASE(UniquePtrMakeUnique)
+{
+    auto ptr = Moon::UniquePtr<Dummy>::MakeUnique(30);
+    BOOST_CHECK(ptr.Get() != nullptr);
+    BOOST_CHECK_EQUAL(ptr->value, 30);
+
+    auto arr_ptr = Moon::UniquePtr<Dummy[]>::MakeUnique(3);
+    arr_ptr[0] = Dummy(1);
+    arr_ptr[1] = Dummy(2);
+    arr_ptr[2] = Dummy(3);
+    BOOST_CHECK(arr_ptr.Get() != nullptr);
+    BOOST_CHECK_EQUAL(arr_ptr[0].value, 1);
+    BOOST_CHECK_EQUAL(arr_ptr[1].value, 2);
+    BOOST_CHECK_EQUAL(arr_ptr[2].value, 3);
+} 
 BOOST_AUTO_TEST_SUITE_END()
 
 }  // namespace Moon::Test

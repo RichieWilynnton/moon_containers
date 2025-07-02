@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 namespace Moon
 {
 
@@ -8,13 +10,11 @@ class UniquePtr
 {
    public:
     UniquePtr() : mPtr(nullptr) {};
-    explicit UniquePtr(T*&ptr) : mPtr(ptr){
+    explicit UniquePtr(T *ptr) : mPtr(ptr)
+    {
         ptr = nullptr;
     };
 
-    explicit UniquePtr(T*&&ptr) : mPtr(ptr) {
-        ptr = nullptr;
-    };
     ~UniquePtr()
     {
         if (mPtr)
@@ -66,10 +66,17 @@ class UniquePtr
     {
         return mPtr;
     }
-    
-    operator bool() const noexcept 
+
+    operator bool() const noexcept
     {
         return mPtr != nullptr;
+    }
+
+
+    template <typename... Args>
+    static UniquePtr<T> MakeUnique(Args &&...args)
+    {
+        return UniquePtr<T>(new T(std::forward<Args>(args)...));
     }
 
    private:
@@ -81,13 +88,11 @@ class UniquePtr<T[]>
 {
    public:
     UniquePtr() : mPtr(nullptr) {};
-    explicit UniquePtr(T*&ptr) : mPtr(ptr){
+    explicit UniquePtr(T *ptr) : mPtr(ptr)
+    {
         ptr = nullptr;
     };
 
-    explicit UniquePtr(T*&&ptr) : mPtr(ptr) {
-        ptr = nullptr;
-    };
     ~UniquePtr()
     {
         if (mPtr)
@@ -139,18 +144,23 @@ class UniquePtr<T[]>
     {
         return mPtr;
     }
-    
-    operator bool() const noexcept 
+
+    operator bool() const noexcept
     {
         return mPtr != nullptr;
     }
 
-    T& operator[](int index)
+    T &operator[](int index)
     {
         return mPtr[index];
     }
+
+    static UniquePtr<T[]> MakeUnique(size_t size)
+    {
+        return UniquePtr<T[]>(new T[size]());
+    }
+
    private:
     T *mPtr;
 };
 }  // namespace Moon
-
