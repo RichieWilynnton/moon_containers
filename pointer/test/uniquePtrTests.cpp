@@ -1,4 +1,3 @@
-#include <boost/test/tools/old/interface.hpp>
 #define BOOST_TEST_MODULE UniquePtrTests
 #include <PointerLib/uniquePtr.hpp>
 #include <boost/test/unit_test.hpp>

@@ -14,7 +14,11 @@ class Stack
         : mCapacity(STARTING_CAPACITY),
           mElemCount(0),
           mHead(malloc(sizeof(T) * mCapacity), mTail(mHead)) {};
-    ~Stack();
+    ~Stack() 
+    {
+        free(mHead);
+        free(mTail);
+    }
     Stack(Stack& other)
     {
         mCapacity = other.mCapacity;
@@ -59,25 +63,19 @@ class Stack
         }
     }
 
+    operator bool() const noexcept;
+
     void Push(const T& elem);
-    void Pop();
-    void Top();
+    void Pop(const T& elem);
+    T& Top() const noexcept;
+    size_t Size() const noexcept;
+    bool Empty() const noexcept;
 
-    size_t Size() const noexcept
-    {
-        return mElemCount;
-    }
-    bool Empty() const noexcept
-    {
-        return mElemCount == 0;
-    }
-
-    operator bool() const noexcept
-    {
-        return mElemCount > 0;
-    }
 
    private:
+    void Reallocate();
+    size_t GetNewCapacity();
+
     static const size_t STARTING_CAPACITY = 10;
     size_t mCapacity;
     size_t mElemCount;
