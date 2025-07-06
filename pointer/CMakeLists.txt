@@ -1,4 +1,4 @@
 add_static_library(PointerLib
-uniquePtr.cpp)
+    uniquePtr.cpp)
 
 add_subdirectory(test)

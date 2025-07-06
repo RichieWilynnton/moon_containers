@@ -72,7 +72,6 @@ class UniquePtr
         return mPtr != nullptr;
     }
 
-
     template <typename... Args>
     static UniquePtr<T> MakeUnique(Args &&...args)
     {
@@ -88,10 +87,7 @@ class UniquePtr<T[]>
 {
    public:
     UniquePtr() : mPtr(nullptr) {};
-    explicit UniquePtr(T *ptr) : mPtr(ptr)
-    {
-        ptr = nullptr;
-    };
+    explicit UniquePtr(T *ptr) : mPtr(ptr) {};
 
     ~UniquePtr()
     {

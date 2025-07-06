@@ -2,5 +2,6 @@ add_static_library(StackLib
     stack.cpp 
 )
 depend_and_link(StackLib
-    PointerLib
-)
+    PointerLib)
+
+add_subdirectory(test)

@@ -13,12 +13,12 @@ void Stack<T>::Push(const T& elem)
     {
         Reallocate();
     }
-    *mHead = elem;
+    mHead[mElemCount] = elem;
     ++mElemCount;
 }
 
 template <typename T>
-void Stack<T>::Pop(const T& elem)
+void Stack<T>::Pop()
 {
     if (mElemCount == 0)
         throw std::runtime_error("Pop(): empty stack cannot be poppped");
@@ -26,10 +26,10 @@ void Stack<T>::Pop(const T& elem)
 }
 
 template <typename T>
-T& Stack<T>::Top() const noexcept
+T& Stack<T>::Top() const
 {
-    auto ptr = mHead + sizeof(T) * (mElemCount - 1);
-    return *ptr;
+    if (mElemCount == 0) throw std::runtime_error("Top(): empty stack cannot be accessed");
+    return mHead[mElemCount - 1];
 }
 
 template <typename T>
@@ -48,8 +48,7 @@ template <typename T>
 void Stack<T>::Reallocate()
 {
     const size_t newCapacity = GetNewCapacity();
-    T* newHead = malloc(newCapacity * sizeof(T));
-
+    T* newHead = static_cast<T*>(malloc(newCapacity * sizeof(T)));
     if (newHead == nullptr)
     {
         throw std::runtime_error("Reallocate(): malloc error");
@@ -57,16 +56,20 @@ void Stack<T>::Reallocate()
 
     T* newTail = newHead + newCapacity;
 
-    for (size_t i = 0; i < newCapacity; ++i) 
+    for (size_t i = 0; i < newCapacity; ++i)
     {
-       newHead[i] = mHead[i]; 
+        newHead[i] = mHead[i];
     }
 
     mCapacity = newCapacity;
 
     free(mHead);
-    free(mTail);
     mHead = newHead;
-    mTail = newTail;
 }
-}  // namespace Moon
+
+template <typename T>
+size_t Stack<T>::GetNewCapacity() const noexcept
+{
+    return mCapacity == 0 ? 1 : mCapacity * 2;
+}
+} // namespace Moon
