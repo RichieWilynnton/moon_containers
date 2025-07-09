@@ -1,6 +1,8 @@
 #pragma once
 
 #include <StackLib/stack.hpp>
+#include <cassert>
+#include <iostream>
 #include <stdexcept>
 
 namespace Moon
@@ -11,7 +13,21 @@ void Stack<T>::Push(const T& elem)
 {
     if (mElemCount == mCapacity)
     {
-        Reallocate();
+        size_t newCapacity = GetNewCapacity();
+        T* newHead = static_cast<T*>(malloc(sizeof(T) * newCapacity));
+        if (newHead == nullptr)
+        {
+            throw std::runtime_error(MALLOC_ERR_MSG);
+        }
+
+        for (size_t i = 0; i < mElemCount; ++i)
+        {
+            newHead[i] = std::move(mHead[i]);
+        }
+
+        free(mHead);
+        mHead = newHead;
+        mCapacity = newCapacity;
     }
     mHead[mElemCount] = elem;
     ++mElemCount;
@@ -22,13 +38,15 @@ void Stack<T>::Pop()
 {
     if (mElemCount == 0)
         throw std::runtime_error("Pop(): empty stack cannot be poppped");
+    mHead[mElemCount - 1].~T();
     --mElemCount;
 }
 
 template <typename T>
 T& Stack<T>::Top() const
 {
-    if (mElemCount == 0) throw std::runtime_error("Top(): empty stack cannot be accessed");
+    if (mElemCount == 0)
+        throw std::runtime_error("Top(): empty stack cannot be accessed");
     return mHead[mElemCount - 1];
 }
 
@@ -45,26 +63,19 @@ bool Stack<T>::Empty() const noexcept
 }
 
 template <typename T>
-void Stack<T>::Reallocate()
+void Stack<T>::DeallocateAndDestruct()
 {
-    const size_t newCapacity = GetNewCapacity();
-    T* newHead = static_cast<T*>(malloc(newCapacity * sizeof(T)));
-    if (newHead == nullptr)
+    if (mHead)
     {
-        throw std::runtime_error("Reallocate(): malloc error");
+        for (size_t i = 0; i < mElemCount; ++i)
+        {
+            mHead[i].~T();
+        }
+        free(mHead);
+        mHead = nullptr;
+        mCapacity = 0;
+        mElemCount = 0;
     }
-
-    T* newTail = newHead + newCapacity;
-
-    for (size_t i = 0; i < newCapacity; ++i)
-    {
-        newHead[i] = mHead[i];
-    }
-
-    mCapacity = newCapacity;
-
-    free(mHead);
-    mHead = newHead;
 }
 
 template <typename T>
@@ -72,4 +83,4 @@ size_t Stack<T>::GetNewCapacity() const noexcept
 {
     return mCapacity == 0 ? 1 : mCapacity * 2;
 }
-} // namespace Moon
+}  // namespace Moon

@@ -1,16 +1,18 @@
 #pragma once
 
 #include <PointerLib/uniquePtr.hpp>
-
 #include <cstddef>
+#include <iostream>
 #include <cstdlib>
+#include <stdexcept>
 
 namespace Moon
 {
 /*
- NOTE: UniquePtr with array cannot be used here, because constructors shouldn't be called
-    when allocating memory on the heap. By default, new T[] calls the default constructor for each element.
-    Malloc has to be used instead.
+ NOTE: UniquePtr with array cannot be used here, because constructors shouldn't
+ be called when allocating memory on the heap. By default, new T[] calls the
+ default constructor for each element. Malloc has to be used instead. Note:
+ Destructor has to be called manually for each element in the array,
  * */
 template <typename T>
 class Stack
@@ -21,17 +23,22 @@ class Stack
           mElemCount(0),
           mHead(static_cast<T*>(malloc((sizeof(T) * mCapacity))))
     {
-    }
-    ~Stack()
-    {
-        free(mHead);
+        if (mHead == nullptr)
+        {
+            throw std::runtime_error(MALLOC_ERR_MSG);
+        }
     }
     Stack(Stack& other)
+        : mCapacity(other.mCapacity),
+          mElemCount(other.mElemCount),
+          mHead(static_cast<T*>(malloc((sizeof(T) * mCapacity))))
     {
-        mCapacity = other.mCapacity;
-        mElemCount = other.mElemCount;
+        if (mHead == nullptr)
+        {
+            throw std::runtime_error(MALLOC_ERR_MSG);
+        }
 
-        for (size_t i = 0; i < other.mCapacity; ++i)
+        for (size_t i = 0; i < mElemCount; ++i)
         {
             mHead[i] = other.mHead[i];
         }
@@ -42,47 +49,51 @@ class Stack
         mElemCount = other.mElemCount;
         mHead = other.mHead;
 
+        other.mHead = nullptr;
         other.mCapacity = 0;
         other.mElemCount = 0;
-        other.mHead = nullptr;
-        if (other.mHead)
-            free(other.mHead);
     }
     Stack& operator=(Stack& other)
     {
         if (this != &other)
         {
-            mCapacity = other.mCapacity;
-            mElemCount = other.mElemCount;
+            DeallocateAndDestruct();
 
-            if (mHead)
+            mHead = static_cast<T*>(malloc((sizeof(T) * other.mCapacity)));
+            if (mHead == nullptr)
             {
-                free(mHead);
+                throw std::runtime_error(MALLOC_ERR_MSG);
             }
+            mCapacity = other.mCapacity;
 
-            mHead = static_cast<T*>(malloc((sizeof(T) * mCapacity)));
-            for (size_t i = 0; i < other.mCapacity; ++i)
+            for (size_t i = 0; i < other.mElemCount; ++i)
             {
                 mHead[i] = other.mHead[i];
             }
+            mElemCount = other.mElemCount;
         }
+
         return *this;
     }
     Stack& operator=(Stack&& other)
     {
         if (this != &other)
         {
+            DeallocateAndDestruct();
+            mHead = other.mHead;
             mCapacity = other.mCapacity;
             mElemCount = other.mElemCount;
-            mHead = other.mHead;
 
+            other.mHead = nullptr;
             other.mCapacity = 0;
             other.mElemCount = 0;
-            other.mHead = nullptr;
-            if (other.mHead)
-                free(other.mHead);
         }
         return *this;
+    }
+
+    ~Stack()
+    {
+        DeallocateAndDestruct();
     }
 
     operator bool() const noexcept;
@@ -94,13 +105,16 @@ class Stack
     bool Empty() const noexcept;
 
    private:
-    void Reallocate();
+    void DeallocateAndDestruct();
     size_t GetNewCapacity() const noexcept;
 
     static const size_t STARTING_CAPACITY = 10;
     size_t mCapacity;
     size_t mElemCount;
     T* mHead;
+    // Error message for malloc failure
+
+    static constexpr char const* MALLOC_ERR_MSG = "Stack(): malloc error";
 };
 
 }  // namespace Moon
@@ -109,3 +123,4 @@ class Stack
 
 // NOTE: free vs delete
 // free doesn't call destructors, while delete does.
+// NOTE: Handle exceptions for malloc

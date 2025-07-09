@@ -8,18 +8,15 @@ template <typename T>
 class CallTracker : public T
 {
    public:
-    CallTracker() : T()
-    {
+    CallTracker() : T() {
         ++mNoArgConstructorCalls;
     }
 
-    CallTracker(CallTracker& other) : T(other)
-    {
+    CallTracker(CallTracker& other) : T(other) {
         ++mCopyConstructorCalls;
     }
 
-    CallTracker(CallTracker&& other) : T(std::move(other))
-    {
+    CallTracker(CallTracker&& other) : T(std::move(other)) {
         ++mMoveConstructorCalls;
     }
 
@@ -43,7 +40,9 @@ class CallTracker : public T
         return *this;
     }
 
-    ~CallTracker() {}
+    ~CallTracker()
+    {
+    }
     size_t mNoArgConstructorCalls = 0;
     size_t mMoveConstructorCalls = 0;
     size_t mCopyConstructorCalls = 0;
