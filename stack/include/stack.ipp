@@ -22,7 +22,7 @@ void Stack<T>::Emplace(Args&&... args)
 {
     if (mElemCount == mCapacity)
     {
-        size_t newCapacity = GetNewCapacity();
+        size_t newCapacity = GetNewCapacity(mElemCount);
         T* newHead = static_cast<T*>(malloc(sizeof(T) * newCapacity));
         if (newHead == nullptr)
         {
@@ -47,7 +47,7 @@ void Stack<T>::Push(const T& elem)
 {
     if (mElemCount == mCapacity)
     {
-        size_t newCapacity = GetNewCapacity();
+        size_t newCapacity = GetNewCapacity(mElemCount);
         T* newHead = static_cast<T*>(malloc(sizeof(T) * newCapacity));
         if (newHead == nullptr)
         {
@@ -97,7 +97,7 @@ bool Stack<T>::Empty() const noexcept
 }
 
 template <typename T>
-void Stack<T>::DeallocateAndDestruct()
+void Stack<T>::Clear()
 {
     if (mHead)
     {
@@ -113,7 +113,7 @@ void Stack<T>::DeallocateAndDestruct()
 }
 
 template <typename T>
-size_t Stack<T>::GetNewCapacity() const noexcept
+size_t Stack<T>::GetNewCapacity(size_t numOfElems) const noexcept
 {
     return mCapacity == 0 ? 1 : mCapacity * 2;
 }

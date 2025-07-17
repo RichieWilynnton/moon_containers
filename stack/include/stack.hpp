@@ -17,7 +17,7 @@ template <typename T>
 class Stack
 {
    public:
-    static const size_t STARTING_CAPACITY; 
+    static const size_t STARTING_CAPACITY;
 
     Stack()
         : mCapacity(STARTING_CAPACITY),
@@ -45,11 +45,10 @@ class Stack
         }
     }
     Stack(Stack&& other)
+        : mCapacity(other.mCapacity),
+          mElemCount(other.mElemCount),
+          mHead(other.mHead)
     {
-        mCapacity = other.mCapacity;
-        mElemCount = other.mElemCount;
-        mHead = other.mHead;
-
         other.mHead = nullptr;
         other.mCapacity = 0;
         other.mElemCount = 0;
@@ -58,29 +57,32 @@ class Stack
     {
         if (this != &other)
         {
-            DeallocateAndDestruct();
-
-            mHead = static_cast<T*>(malloc((sizeof(T) * other.mCapacity)));
-            if (mHead == nullptr)
+            Clear();
+            if (mCapacity < other.mElemCount)
             {
-                throw std::runtime_error(MALLOC_ERR_MSG);
+                // reallocate
+                const size_t newCapacity = GetNewCapacity(other.mElemCount);
+                mHead = static_cast<T*>(malloc(sizeof(T) * newCapacity));
+                if (mHead == nullptr)
+                {
+                    throw std::runtime_error(MALLOC_ERR_MSG);
+                }
+                mCapacity = newCapacity;
             }
-            mCapacity = other.mCapacity;
 
-            for (size_t i = 0; i < other.mElemCount; ++i)
+            for (int i = 0; i < other.mElemCount; ++i)
             {
                 mHead[i] = other.mHead[i];
             }
             mElemCount = other.mElemCount;
         }
-
         return *this;
     }
     Stack& operator=(Stack&& other)
     {
         if (this != &other)
         {
-            DeallocateAndDestruct();
+            Clear();
             mHead = other.mHead;
             mCapacity = other.mCapacity;
             mElemCount = other.mElemCount;
@@ -94,12 +96,12 @@ class Stack
 
     ~Stack()
     {
-        DeallocateAndDestruct();
+        Clear();
     }
 
     operator bool() const noexcept;
 
-    template<typename... Args>
+    template <typename... Args>
     void Emplace(Args&&... args);
 
     void Push(const T& elem);
@@ -107,10 +109,9 @@ class Stack
     T& Top() const;
     size_t Size() const noexcept;
     bool Empty() const noexcept;
-
+    void Clear();
    private:
-    void DeallocateAndDestruct();
-    size_t GetNewCapacity() const noexcept;
+    size_t GetNewCapacity(size_t numOfElems) const noexcept;
 
     size_t mCapacity;
     size_t mElemCount;
