@@ -2,7 +2,6 @@
 
 #include <PointerLib/uniquePtr.hpp>
 #include <cstddef>
-#include <iostream>
 #include <cstdlib>
 #include <stdexcept>
 
@@ -18,6 +17,8 @@ template <typename T>
 class Stack
 {
    public:
+    static const size_t STARTING_CAPACITY; 
+
     Stack()
         : mCapacity(STARTING_CAPACITY),
           mElemCount(0),
@@ -98,6 +99,9 @@ class Stack
 
     operator bool() const noexcept;
 
+    template<typename... Args>
+    void Emplace(Args&&... args);
+
     void Push(const T& elem);
     void Pop();
     T& Top() const;
@@ -108,11 +112,9 @@ class Stack
     void DeallocateAndDestruct();
     size_t GetNewCapacity() const noexcept;
 
-    static const size_t STARTING_CAPACITY = 10;
     size_t mCapacity;
     size_t mElemCount;
     T* mHead;
-    // Error message for malloc failure
 
     static constexpr char const* MALLOC_ERR_MSG = "Stack(): malloc error";
 };

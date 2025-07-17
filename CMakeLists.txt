@@ -7,13 +7,11 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/CMakeFunctions.cmake)
 enable_testing()
 option(RUN_TESTS_AFTER_BUILD "Run tests automatically after building" ON)
 
-# Initialize list of all test targets
 set(ALL_TEST_TARGETS "" CACHE INTERNAL "List of all test targets")
 
 add_subdirectory(stack)
 add_subdirectory(pointer)
 add_subdirectory(testUtil)
-# add_subdirectory(arrow)
 
 # Add custom target to run all tests after build
 if(RUN_TESTS_AFTER_BUILD)
