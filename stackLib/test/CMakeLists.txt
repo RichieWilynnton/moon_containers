@@ -6,6 +6,7 @@ add_test_executable(StackTest
 
 depend_and_link(StackTest
     StackLib
+    CommonTestLib
     GTest::gmock_main
     GTest::gtest_main
 )

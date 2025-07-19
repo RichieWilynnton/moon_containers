@@ -12,7 +12,7 @@ set(ALL_TEST_TARGETS "" CACHE INTERNAL "List of all test targets")
 add_subdirectory(stackLib)
 add_subdirectory(pointerLib)
 add_subdirectory(vectorLib)
-add_subdirectory(testUtilLib)
+add_subdirectory(commonLib)
 
 # Add custom target to run all tests after build
 if(RUN_TESTS_AFTER_BUILD)

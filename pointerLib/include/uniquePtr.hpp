@@ -11,9 +11,7 @@ class UniquePtr
    public:
     UniquePtr() : mPtr(nullptr) {};
     explicit UniquePtr(T *ptr) : mPtr(ptr)
-    {
-        ptr = nullptr;
-    };
+    {};
 
     ~UniquePtr()
     {
@@ -22,11 +20,13 @@ class UniquePtr
             delete mPtr;
         }
     }
+
     UniquePtr(UniquePtr &other) = delete;
     UniquePtr(UniquePtr &&other) noexcept : mPtr(other.mPtr)
     {
         other.mPtr = nullptr;
     }
+
     UniquePtr &operator=(UniquePtr &other) = delete;
     UniquePtr &operator=(UniquePtr &&other) noexcept
     {

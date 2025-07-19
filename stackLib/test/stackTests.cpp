@@ -1,80 +1,13 @@
+#include <StackLib/stack.hpp>
+#include <CommonTestLib/dummy.hpp>
+#include <CommonTestLib/dummyTracker.hpp>
+
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include <StackLib/stack.hpp>
-#include <boost/test/unit_test.hpp>
-#include <boost/test/unit_test_suite.hpp>
-#include "gmock/gmock.h"
-
 namespace Moon::Test
 {
-
-struct DummyTracker
-{
-    MOCK_METHOD(void, DefaultConstructor, ());
-    MOCK_METHOD(void, ArgConstructor, ());
-    MOCK_METHOD(void, CopyConstructor, ());
-    MOCK_METHOD(void, MoveConstructor, ());
-    MOCK_METHOD(void, CopyAssignment, ());
-    MOCK_METHOD(void, MoveAssignment, ());
-    MOCK_METHOD(void, Destructor, ());
-};
-
-class Dummy
-{
-   public:
-    Dummy()
-    {
-        tracker->DefaultConstructor();
-    }
-
-    Dummy(int v) : value(v)
-    {
-        tracker->ArgConstructor();
-    }
-
-    Dummy(const Dummy& other) : value(other.value)
-    {
-        tracker->CopyConstructor();
-    }
-
-    Dummy(Dummy&& other) : value(other.value)
-    {
-        tracker->MoveConstructor();
-    }
-
-    Dummy& operator=(const Dummy& other)
-    {
-        tracker->CopyAssignment();
-        if (this != &other)
-        {
-            value = other.value;
-        }
-        return *this;
-    }
-
-    Dummy& operator=(Dummy&& other)
-    {
-        tracker->MoveAssignment();
-        if (this != &other)
-        {
-            value = other.value;
-            other.value = 0;
-        }
-        return *this;
-    }
-
-    ~Dummy()
-    {
-        tracker->Destructor();
-    }
-
-    int value = 0;
-
-    static DummyTracker* tracker;
-};
-
-DummyTracker* Dummy::tracker = nullptr;
+using Dummy = Moon::Common::Test::Dummy;
 
 class StackFixture : public ::testing::Test
 {
@@ -122,8 +55,8 @@ TEST_F(StackFixture, WHEN_push_r_value_elements_THEN_elements_are_moved_onto_sta
     Stack<Dummy> stack;
 
     EXPECT_CALL(*dummyTracker, MoveConstructor())
-        .Times(1);  // For the move into stack
-    EXPECT_CALL(*dummyTracker, Destructor()).Times(1);  // For the temporary
+        .Times(1);  
+    EXPECT_CALL(*dummyTracker, Destructor()).Times(1);  
     stack.Push(Dummy(42));
     BlockExpectations();
 }
@@ -161,17 +94,17 @@ TEST_F(StackFixture, WHEN_pop_elements_THEN_stack_size_decreases)
 {
     Stack<Dummy> stack;
 
-    // Expectations for Push operations
+    
     EXPECT_CALL(*dummyTracker, ArgConstructor()).Times(2);
     EXPECT_CALL(*dummyTracker, MoveConstructor()).Times(2);
-    EXPECT_CALL(*dummyTracker, Destructor()).Times(2);  // For temporaries
+    EXPECT_CALL(*dummyTracker, Destructor()).Times(2);  
 
     stack.Push(Dummy(1));
     stack.Push(Dummy(2));
 
-    // Expectations for Pop operations
+    
     EXPECT_CALL(*dummyTracker, Destructor())
-        .Times(2);  // For elements being popped
+        .Times(2);  
 
     EXPECT_EQ(stack.Size(), 2);
     stack.Pop();
@@ -351,7 +284,7 @@ TEST_F(
     BlockExpectations();
 }
 
-}  // namespace Moon::Test
+}  
 
-// NOTE: I tried to use BOOST.test with gmock, but undefined behaviors occur when dealing with the tracker
-// static member.
+
+

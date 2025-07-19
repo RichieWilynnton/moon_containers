@@ -1,6 +1,5 @@
 #pragma once
 
-#include <PointerLib/uniquePtr.hpp>
 #include <cstddef>
 #include <cstdlib>
 #include <stdexcept>
