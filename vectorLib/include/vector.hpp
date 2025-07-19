@@ -1,66 +1,55 @@
 #pragma once
 
-#include <PointerLib/uniquePtr.hpp>
 #include <cstddef>
 #include <cstdlib>
 #include <stdexcept>
 
 namespace Moon
 {
-/*
- NOTE: UniquePtr with array cannot be used here, because constructors shouldn't
- be called when allocating memory on the heap. By default, new T[] calls the
- default constructor for each element. Malloc has to be used instead. Note:
- Destructor has to be called manually for each element in the array,
- * */
+
 template <typename T>
-class Stack
+class Vector
 {
    public:
-    static const size_t STARTING_CAPACITY;
-
-    Stack()
-        : mCapacity(STARTING_CAPACITY),
+    Vector() noexcept
+        : mCapacity(DEFAULT_CAPACITY),
           mElemCount(0),
-          mHead(static_cast<T*>(malloc((sizeof(T) * mCapacity))))
+          mHead(static_cast<T*>(malloc(sizeof(T) * mCapacity)))
     {
         if (mHead == nullptr)
         {
             throw std::runtime_error(MALLOC_ERR_MSG);
         }
     }
-    Stack(Stack& other)
+
+    Vector(const Vector& other) noexcept
         : mCapacity(other.mCapacity),
           mElemCount(other.mElemCount),
-          mHead(static_cast<T*>(malloc((sizeof(T) * mCapacity))))
+          mHead(static_cast<T*>(malloc(sizeof(T) * mCapacity)))
     {
-        if (mHead == nullptr)
-        {
-            throw std::runtime_error(MALLOC_ERR_MSG);
-        }
-
-        for (size_t i = 0; i < mElemCount; ++i)
+        for (int i = 0; i < other.mElemCount; ++i)
         {
             mHead[i] = other.mHead[i];
         }
     }
-    Stack(Stack&& other)
+
+    Vector(Vector&& other) noexcept
         : mCapacity(other.mCapacity),
           mElemCount(other.mElemCount),
           mHead(other.mHead)
     {
         other.mHead = nullptr;
-        other.mCapacity = 0;
         other.mElemCount = 0;
+        other.mCapacity = 0;
     }
-    Stack& operator=(Stack& other)
+
+    Vector& operator=(const Vector& other)
     {
         if (this != &other)
         {
             Clear();
             if (mCapacity < other.mElemCount)
             {
-                // reallocate
                 const size_t newCapacity = GetNewCapacity(other.mElemCount);
                 mHead = static_cast<T*>(malloc(sizeof(T) * newCapacity));
                 if (mHead == nullptr)
@@ -78,7 +67,8 @@ class Stack
         }
         return *this;
     }
-    Stack& operator=(Stack&& other)
+
+    Vector& operator=(Vector&& other)
     {
         if (this != &other)
         {
@@ -88,42 +78,42 @@ class Stack
             mElemCount = other.mElemCount;
 
             other.mHead = nullptr;
-            other.mCapacity = 0;
             other.mElemCount = 0;
+            other.mCapacity = 0;
         }
-        return *this;
     }
-
-    ~Stack()
-    {
-        Clear();
-    }
-
-    operator bool() const noexcept;
 
     template <typename... Args>
-    void Emplace(Args&&... args);
+    void EmplaceBack();
 
-    void Push(const T& elem);
-    void Pop();
-    T& Top() const;
+    template <typename... Args>
+    void EmplaceFront();
+
+    void Reserve();
+    void PushBack(const T& elem);
+    void PushBack(T&& elem);
+    void PopBack();
+    void PushFront();
+    void PopFront();
+    void Clear();
     size_t Size() const noexcept;
     bool Empty() const noexcept;
-    void Clear();
+
+    T& operator[](const size_t index);
+
    private:
-    size_t GetNewCapacity(size_t numOfElems) const noexcept;
+    size_t GetNewCapacity(size_t numOfElems);
+
+    void Reallocate(size_t newCapacity);
+
+    constexpr static size_t DEFAULT_CAPACITY = 10;
+    static constexpr char const* MALLOC_ERR_MSG = "Vector(): malloc error";
 
     size_t mCapacity;
     size_t mElemCount;
     T* mHead;
-
-    static constexpr char const* MALLOC_ERR_MSG = "Stack(): malloc error";
 };
 
 }  // namespace Moon
 
-#include <stackLib/stack.ipp>
-
-// NOTE: free vs delete
-// free doesn't call destructors, while delete does.
-// NOTE: Handle exceptions for malloc
+#include <vectorLib/vector.ipp>
