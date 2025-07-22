@@ -94,14 +94,12 @@ TEST_F(StackFixture, WHEN_pop_elements_THEN_stack_size_decreases)
 {
     Stack<Dummy> stack;
 
-    
     EXPECT_CALL(*dummyTracker, ArgConstructor()).Times(2);
     EXPECT_CALL(*dummyTracker, MoveConstructor()).Times(2);
     EXPECT_CALL(*dummyTracker, Destructor()).Times(2);  
 
     stack.Push(Dummy(1));
     stack.Push(Dummy(2));
-
     
     EXPECT_CALL(*dummyTracker, Destructor())
         .Times(2);  
@@ -187,7 +185,7 @@ TEST_F(
     stack1.Push(Dummy(1));
     stack1.Push(Dummy(2));
 
-    EXPECT_CALL(*dummyTracker, CopyAssignment()).Times(2);
+    EXPECT_CALL(*dummyTracker, CopyConstructor()).Times(2);
     Stack<Dummy> stack2(stack1);
     EXPECT_EQ(stack2.Size(), 2);
     EXPECT_EQ(stack2.Top().value, 2);
@@ -283,8 +281,4 @@ TEST_F(
 
     BlockExpectations();
 }
-
 }  
-
-
-

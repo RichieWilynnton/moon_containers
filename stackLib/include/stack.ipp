@@ -24,35 +24,20 @@ void Stack<T>::Emplace(Args&&... args)
     {
         Reallocate(GetNewCapacity(mElemCount));
     }
-    new (&mHead[mElemCount]) T(std::forward<Args>(args)...);
+    new (mHead + mElemCount) T(std::forward<Args>(args)...);
     ++mElemCount;
 }
 
 template <typename T>
 void Stack<T>::Push(const T& elem)
 {
-    if (mElemCount == mCapacity)
-    {
-        size_t newCapacity = GetNewCapacity(mElemCount);
-        T* newHead = static_cast<T*>(malloc(sizeof(T) * newCapacity));
-        if (newHead == nullptr)
-        {
-            Reallocate(GetNewCapacity(mElemCount));
-        }
-    }
-    new (&mHead[mElemCount]) T(elem);
-    ++mElemCount;
+    Emplace(elem);
 }
 
 template <typename T>
 void Stack<T>::Push(T&& elem)
 {
-    if (mElemCount == mCapacity)
-    {
-        Reallocate(GetNewCapacity(mElemCount));
-    }
-    new (&mHead[mElemCount]) T(std::move(elem));
-    ++mElemCount;
+    Emplace(std::move(elem));
 }
 
 template <typename T>
@@ -117,7 +102,7 @@ void Stack<T>::Reallocate(size_t newCapacity)
 
     for (size_t i = 0; i < mElemCount; ++i)
     {
-        new (&newHead[i]) T(std::move(mHead[i]));
+        new (newHead + i) T(std::move(mHead[i]));
     }
 
     free(mHead);

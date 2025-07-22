@@ -40,8 +40,7 @@ class Stack
 
         for (size_t i = 0; i < mElemCount; ++i)
         {
-            mHead[i] = other.mHead[i];
-            new (&mHead[i]) T(other.mHead[i]);
+            new (mHead + i) T(other.mHead[i]);
         }
     }
 
@@ -73,7 +72,7 @@ class Stack
 
             for (int i = 0; i < other.mElemCount; ++i)
             {
-                new (&mHead[i]) T(other.mHead[i]);
+                new (mHead + i) T(other.mHead[i]);
             }
             mElemCount = other.mElemCount;
         }

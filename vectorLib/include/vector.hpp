@@ -1,5 +1,6 @@
 #pragma once
 
+#include <VectorLib/vectorIterator.hpp>
 #include <cstddef>
 #include <cstdlib>
 #include <stdexcept>
@@ -10,9 +11,14 @@ namespace Moon
 template <typename T>
 class Vector
 {
+    using Iterator = VectorIterator<T>;
+
    public:
-    Vector() noexcept
-        : mCapacity(DEFAULT_CAPACITY),
+    constexpr static size_t STARTING_CAPACITY = 10;
+
+   public:
+    Vector()
+        : mCapacity(STARTING_CAPACITY),
           mElemCount(0),
           mHead(static_cast<T*>(malloc(sizeof(T) * mCapacity)))
     {
@@ -29,7 +35,7 @@ class Vector
     {
         for (int i = 0; i < other.mElemCount; ++i)
         {
-            mHead[i] = other.mHead[i];
+            new (mHead + i) T(other.mHead[i]);
         }
     }
 
@@ -61,7 +67,7 @@ class Vector
 
             for (int i = 0; i < other.mElemCount; ++i)
             {
-                mHead[i] = other.mHead[i];
+                new (mHead + i) T(other.mHead[i]);
             }
             mElemCount = other.mElemCount;
         }
@@ -84,31 +90,29 @@ class Vector
     }
 
     template <typename... Args>
-    void EmplaceBack();
+    void EmplaceBack(Args&&... args);
 
-    template <typename... Args>
-    void EmplaceFront();
-
-    void Reserve();
+    void Reserve(size_t size);
     void PushBack(const T& elem);
     void PushBack(T&& elem);
     void PopBack();
-    void PushFront();
-    void PopFront();
     void Clear();
     size_t Size() const noexcept;
     bool Empty() const noexcept;
+    T& Back() const;
 
     T& operator[](const size_t index);
+    operator bool() const noexcept;
+
+    Iterator begin();
+    Iterator end();
 
    private:
-    size_t GetNewCapacity(size_t numOfElems);
+    size_t GetNewCapacity(size_t numOfElems) const noexcept;
+    void Reallocate(size_t newCapacity, size_t startOffset = 0);
 
-    void Reallocate(size_t newCapacity);
-
-    constexpr static size_t DEFAULT_CAPACITY = 10;
+   private:
     static constexpr char const* MALLOC_ERR_MSG = "Vector(): malloc error";
-
     size_t mCapacity;
     size_t mElemCount;
     T* mHead;
