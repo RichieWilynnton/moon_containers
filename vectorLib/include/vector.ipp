@@ -136,12 +136,14 @@ size_t Vector<T>::GetNewCapacity(size_t numOfElems) const noexcept
 }
 
 template <typename T>
-typename Vector<T>::Iterator Vector<T>::begin() {
+typename Vector<T>::Iterator Vector<T>::begin() const
+{
     return Iterator{mHead};
 }
 
 template <typename T>
-typename Vector<T>::Iterator Vector<T>::end() {
+typename Vector<T>::Iterator Vector<T>::end() const
+{
     return Iterator{mHead + mElemCount};
 }
 

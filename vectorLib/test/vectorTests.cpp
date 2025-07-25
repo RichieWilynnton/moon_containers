@@ -282,9 +282,4 @@ TEST_F(
 
     BlockExpectations();
 }
-
-
-}  
-
-
-
+} // namespace Moon::Test

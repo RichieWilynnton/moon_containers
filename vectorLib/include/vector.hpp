@@ -104,8 +104,8 @@ class Vector
     T& operator[](const size_t index);
     operator bool() const noexcept;
 
-    Iterator begin();
-    Iterator end();
+    Iterator begin() const;
+    Iterator end() const;
 
    private:
     size_t GetNewCapacity(size_t numOfElems) const noexcept;
