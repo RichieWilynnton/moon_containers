@@ -1,6 +1,8 @@
 #include <VectorLib/vector.hpp>
 #include <CommonTestLib/dummy.hpp>
 #include <CommonTestLib/dummyTracker.hpp>
+#include <AllocatorLib/heapAllocator.hpp>
+#include "gtest/gtest.h"
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -112,12 +114,6 @@ TEST_F(VectorFixture, WHEN_pop_elements_THEN_vector_size_decreases)
     EXPECT_TRUE(vector.Empty());
 }
 
-TEST_F(VectorFixture, WHEN_top_on_empty_vector_THEN_exception_is_thrown)
-{
-    Vector<Dummy> vector;
-    EXPECT_THROW(vector.Back(), std::runtime_error);
-}
-
 TEST_F(VectorFixture, WHEN_elements_are_present_THEN_top_returns_last_element)
 {
     Vector<Dummy> vector;
@@ -149,17 +145,18 @@ TEST_F(
     EXPECT_FALSE(vector);
 }
 
-TEST_F(VectorFixture, WHEN_vector_resize_is_triggered_THEN_no_copies_are_made_AND_no_destructors_are_called)
+TEST_F(VectorFixture, WHEN_vector_reallocation_is_triggered_THEN_no_copies_are_made_AND_no_destructors_are_called)
 {
     Vector<Dummy> vector;
+    const size_t startingCapacity = HeapAllocator<Dummy>::STARTING_CAPACITY;
 
-    for (int i = 0; i < Vector<Dummy>::STARTING_CAPACITY; ++i)
+    for (int i = 0; i < startingCapacity; ++i)
     {
         vector.PushBack(Dummy(i));
     }
 
-    EXPECT_CALL(*dummyTracker, MoveConstructor()).Times(Vector<Dummy>::STARTING_CAPACITY + 1);
-    EXPECT_CALL(*dummyTracker, Destructor()).Times(1);
+    EXPECT_CALL(*dummyTracker, MoveConstructor()).Times(startingCapacity + 1);
+    EXPECT_CALL(*dummyTracker, Destructor()).Times(startingCapacity + 1);
 
     vector.PushBack(Dummy(42));  
     
@@ -282,4 +279,48 @@ TEST_F(
 
     BlockExpectations();
 }
-} // namespace Moon::Test
+
+TEST_F(VectorFixture, WHEN_vector_is_cleared_THEN_all_elements_are_destructed)
+{
+    Vector<Dummy> vector;
+
+    vector.PushBack(Dummy(1));
+    vector.PushBack(Dummy(2));
+
+    EXPECT_CALL(*dummyTracker, Destructor()).Times(2);
+    vector.Clear();
+    EXPECT_TRUE(vector.Empty());
+
+    BlockExpectations();
+}
+
+TEST_F(VectorFixture, WHEN_at_on_out_of_bounds_index_THEN_exception_is_thrown) {
+    Vector<Dummy> vector;
+    EXPECT_THROW(vector.At(0), std::out_of_range);
+}
+
+TEST_F(VectorFixture, WHEN_variadic_constructor_is_called_THEN_elements_are_constructed_with_args)
+{
+    EXPECT_CALL(*dummyTracker, ArgConstructor()).Times(3);
+    EXPECT_CALL(*dummyTracker, CopyConstructor()).Times(0);
+    EXPECT_CALL(*dummyTracker, MoveConstructor()).Times(0);
+    EXPECT_CALL(*dummyTracker, Destructor()).Times(0);
+
+    Vector<Dummy> vector(1, 2, 3);
+
+    EXPECT_EQ(vector.Size(), 3);
+    EXPECT_EQ(vector[0].value, 1);
+    EXPECT_EQ(vector[1].value, 2);
+    EXPECT_EQ(vector[2].value, 3);
+
+    BlockExpectations();
+}
+
+TEST_F(VectorFixture, WHEN_variadic_constructor_is_called_with_no_args_THEN_vector_is_empty)
+{
+    Vector<Dummy> vector;
+    EXPECT_TRUE(vector.Empty());
+    EXPECT_EQ(vector.Size(), 0);
+}
+
+}

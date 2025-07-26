@@ -3,91 +3,91 @@
 
 namespace Moon
 {
-template <typename T>
-VectorIterator<T>& VectorIterator<T>::operator++() noexcept
+template <typename T, typename Allocator>
+VectorIterator<T, Allocator>& VectorIterator<T, Allocator>::operator++() noexcept
 {
     return ++mPtr, *this;
 }
 
-template <typename T>
-VectorIterator<T> VectorIterator<T>::operator++(int) noexcept
+template <typename T, typename Allocator>
+VectorIterator<T, Allocator> VectorIterator<T, Allocator>::operator++(int) noexcept
 {
-    VectorIterator<T> temp{mPtr};
+    VectorIterator<T, Allocator> temp{mPtr};
     ++mPtr;
     return temp;
 }
 
-template <typename T>
-VectorIterator<T>& VectorIterator<T>::operator--() noexcept
+template <typename T, typename Allocator>
+VectorIterator<T, Allocator>& VectorIterator<T, Allocator>::operator--() noexcept
 {
     return --mPtr, *this;
 }
 
-template <typename T>
-VectorIterator<T> VectorIterator<T>::operator--(int) noexcept
+template <typename T, typename Allocator>
+VectorIterator<T, Allocator> VectorIterator<T, Allocator>::operator--(int) noexcept
 {
-    VectorIterator<T> temp{mPtr};
+    VectorIterator<T, Allocator> temp{mPtr};
     --mPtr;
     return temp;
 }
 
-template <typename T>
-VectorIterator<T> VectorIterator<T>::operator+(int offset) const noexcept
+template <typename T, typename Allocator>
+VectorIterator<T, Allocator> VectorIterator<T, Allocator>::operator+(int offset) const noexcept
 {
-    return VectorIterator<T>{mPtr + offset};
+    return VectorIterator<T, Allocator>{mPtr + offset};
 }
 
-template <typename T>
-VectorIterator<T> VectorIterator<T>::operator-(int offset) const noexcept
+template <typename T, typename Allocator>
+VectorIterator<T, Allocator> VectorIterator<T, Allocator>::operator-(int offset) const noexcept
 {
-    return VectorIterator<T>{mPtr - offset};
+    return VectorIterator<T, Allocator>{mPtr - offset};
 }
 
-template <typename T>
-bool VectorIterator<T>::operator==(const VectorIterator& other) const noexcept
+template <typename T, typename Allocator>
+bool VectorIterator<T, Allocator>::operator==(const VectorIterator& other) const noexcept
 {
     return mPtr == other.mPtr;
 }
 
 
-template <typename T>
-bool VectorIterator<T>::operator!=(const VectorIterator& other) const noexcept
+template <typename T, typename Allocator>
+bool VectorIterator<T, Allocator>::operator!=(const VectorIterator& other) const noexcept
 {
     return mPtr != other.mPtr;
 }
 
-template <typename T>
-bool VectorIterator<T>::operator>(const VectorIterator& other) const noexcept
+template <typename T, typename Allocator>
+bool VectorIterator<T, Allocator>::operator>(const VectorIterator& other) const noexcept
 {
     return mPtr > other.mPtr; 
 }
 
-template <typename T>
-bool VectorIterator<T>::operator<(const VectorIterator& other) const noexcept
+template <typename T, typename Allocator>
+bool VectorIterator<T, Allocator>::operator<(const VectorIterator& other) const noexcept
 {
     return mPtr < other.mPtr; 
 }
 
-template <typename T>
-bool VectorIterator<T>::operator>=(const VectorIterator& other) const noexcept
+template <typename T, typename Allocator>
+bool VectorIterator<T, Allocator>::operator>=(const VectorIterator& other) const noexcept
 {
     return mPtr >= other.mPtr; 
 }
 
-template <typename T>
-bool VectorIterator<T>::operator<=(const VectorIterator& other) const noexcept
+template <typename T, typename Allocator>
+bool VectorIterator<T, Allocator>::operator<=(const VectorIterator& other) const noexcept
 {
     return mPtr <= other.mPtr; 
 }
 
-template <typename T>
-T& VectorIterator<T>::operator*()
+template <typename T, typename Allocator>
+T& VectorIterator<T, Allocator>::operator*()
 {
     return *mPtr;
 }
 
-template <typename T>
-T* VectorIterator<T>::operator->() noexcept
+template <typename T, typename Allocator>
+T* VectorIterator<T, Allocator>::operator->() noexcept
 {
     return mPtr;
 }

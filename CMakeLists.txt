@@ -13,6 +13,7 @@ add_subdirectory(stackLib)
 add_subdirectory(pointerLib)
 add_subdirectory(vectorLib)
 add_subdirectory(commonLib)
+add_subdirectory(allocatorLib)
 
 # Add custom target to run all tests after build
 if(RUN_TESTS_AFTER_BUILD)

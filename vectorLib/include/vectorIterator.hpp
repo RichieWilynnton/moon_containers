@@ -1,12 +1,14 @@
 #pragma once
 
+#include <AllocatorLib/heapAllocator.hpp>
+
 namespace Moon
 {
 
-template <typename T>
+template <typename T, typename Allocator>
 class Vector;
 
-template <typename T>
+template <typename T, typename Allocator = HeapAllocator<T>>
 class VectorIterator
 {
    public:
@@ -32,7 +34,7 @@ class VectorIterator
     VectorIterator(T* ptr) noexcept: mPtr(ptr) {};
     T* mPtr;
 
-    friend class Vector<T>;  
+    friend class Vector<T, Allocator>;  
 };
 }  // namespace Moon
 

@@ -3,6 +3,10 @@ vector.cpp
 vectorIterator.cpp
 )
 
+depend_and_link(VectorLib
+    AllocatorLib
+)
+
 add_subdirectory(test)
 
 

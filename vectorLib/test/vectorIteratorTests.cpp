@@ -201,7 +201,7 @@ TEST_F(VectorIteratorFixture,
     
     for (const auto& dummy : emptyVector) {
         loopEntered = true;
-        (void)dummy; // Silence unused variable warning
+        (void)dummy; 
     }
     
     EXPECT_FALSE(loopEntered);

@@ -8,53 +8,53 @@
 namespace Moon
 {
 
-template <typename T>
+template <typename T, typename Allocator> 
 template <typename... Args>
-void Vector<T>::EmplaceBack(Args&&... args)
+void Vector<T, Allocator>::EmplaceBack(Args&&... args)
 {
     if (mElemCount == mCapacity)
     {
-        Reallocate(GetNewCapacity(mElemCount));
+        Reallocate(Allocator::GetNewCapacity(mElemCount));
     }
-    new (mHead + mElemCount) T(std::forward<Args>(args)...);
+    Allocator::Construct(mHead + mElemCount, std::forward<Args>(args)...);
     ++mElemCount;
 }
 
-template <typename T>
-void Vector<T>::Reserve(size_t size)
+template <typename T, typename Allocator>
+void Vector<T, Allocator>::Reserve(size_t size)
 {
     if (size > mCapacity)
     {
-        Reallocate(GetNewCapacity(size));
+        Reallocate(Allocator::GetNewCapacity(size));
     }
 }
 
-template <typename T>
-void Vector<T>::PushBack(const T& elem)
+template <typename T, typename Allocator>
+void Vector<T, Allocator>::PushBack(const T& elem)
 {
     if (mElemCount == mCapacity)
     {
-        Reallocate(GetNewCapacity(mElemCount));
+        Reallocate(Allocator::GetNewCapacity(mElemCount));
     }
 
-    new (mHead + mElemCount) T(elem);
+    Allocator::Construct(mHead + mElemCount, elem);
     ++mElemCount;
 }
 
-template <typename T>
-void Vector<T>::PushBack(T&& elem)
+template <typename T, typename Allocator>
+void Vector<T, Allocator>::PushBack(T&& elem)
 {
     if (mElemCount == mCapacity)
     {
-        Reallocate(GetNewCapacity(mElemCount));
+        Reallocate(Allocator::GetNewCapacity(mElemCount));
     }
 
-    new (mHead + mElemCount) T(std::move(elem));
+    Allocator::Construct(mHead + mElemCount, std::move(elem));
     ++mElemCount;
 }
 
-template <typename T>
-void Vector<T>::PopBack()
+template <typename T, typename Allocator>
+void Vector<T, Allocator>::PopBack()
 {
     if (mElemCount == 0)
     {
@@ -64,8 +64,8 @@ void Vector<T>::PopBack()
     --mElemCount;
 }
 
-template <typename T>
-void Vector<T>::Clear()
+template <typename T, typename Allocator>
+void Vector<T, Allocator>::Clear()
 {
     for (int i = 0; i < mElemCount; ++i)
     {
@@ -74,77 +74,96 @@ void Vector<T>::Clear()
     mElemCount = 0;
 }
 
-template <typename T>
-size_t Vector<T>::Size() const noexcept
+template <typename T, typename Allocator>
+size_t Vector<T, Allocator>::Size() const noexcept
 {
     return mElemCount;
 }
 
-template <typename T>
-bool Vector<T>::Empty() const noexcept
+template <typename T, typename Allocator>
+bool Vector<T, Allocator>::Empty() const noexcept
 {
     return mElemCount == 0;
 }
 
-template <typename T>
-T& Vector<T>::Back() const
+template <typename T, typename Allocator>
+T& Vector<T, Allocator>::Back() const
 {
-    if (mElemCount == 0)
-    {
-        throw std::runtime_error("Back(): empty vector cannot be accessed");
-    }
+    assert(mElemCount > 0 && "Back(): empty vector access, assertion failed");
     return mHead[mElemCount - 1];
 }
 
-template <typename T>
-T& Vector<T>::operator[](const size_t index)
+template <typename T, typename Allocator>
+T& Vector<T, Allocator>::operator[](const size_t index) const noexcept
 {
-    // no bounds checking for performance
-    assert(index < mElemCount && "operator[]: out of bounds vector access");
-    return &mHead[index];
+    assert(index < mElemCount && "operator[]: out of bounds vector access, assertion failed");
+    // no bounds checking
+    return mHead[index];
 }
 
-template <typename T>
-Vector<T>::operator bool() const noexcept
+template <typename T, typename Allocator>
+T& Vector<T, Allocator>::At(const size_t index) const
+{
+    if (index >= mElemCount)
+    {
+        throw std::out_of_range("At(): out of bounds vector access");
+    }
+    return mHead[index];
+}
+
+template <typename T, typename Allocator>
+Vector<T, Allocator>::operator bool() const noexcept
 {
     return mElemCount != 0;
 }
 
-template <typename T>
-void Vector<T>::Reallocate(size_t newCapacity, size_t startOffset)
+template <typename T, typename Allocator>
+size_t Vector<T, Allocator>::Capacity() const noexcept
+{
+    return mCapacity;
+}
+
+template <typename T, typename Allocator>
+void Vector<T, Allocator>::Reallocate(size_t newCapacity, size_t startOffset)
 {
     assert(startOffset + mElemCount <= newCapacity &&
            "Reallocate(): Impl error");
-    T* newHead = static_cast<T*>(malloc(sizeof(T) * newCapacity));
-    if (newHead == nullptr)
-    {
-        throw std::runtime_error(MALLOC_ERR_MSG);
-    }
+    T* newHead = Allocator::Allocate(newCapacity);
 
     for (int i = 0; i < mElemCount; ++i)
     {
-        new (newHead + i + startOffset) T(std::move(mHead[i]));
+        Allocator::Construct(newHead + i + startOffset, std::move(mHead[i]));
+        mHead[i].~T();  
     }
+    
+    Allocator::Deallocate(mHead, mCapacity);
+
     mHead = newHead;
     mCapacity = newCapacity;
 }
 
-template <typename T>
-size_t Vector<T>::GetNewCapacity(size_t numOfElems) const noexcept
-{
-    return numOfElems * 2;
-}
-
-template <typename T>
-typename Vector<T>::Iterator Vector<T>::begin() const
+template <typename T, typename Allocator>
+typename Vector<T, Allocator>::Iterator Vector<T, Allocator>::begin() const
 {
     return Iterator{mHead};
 }
 
-template <typename T>
-typename Vector<T>::Iterator Vector<T>::end() const
+template <typename T, typename Allocator>
+typename Vector<T, Allocator>::Iterator Vector<T, Allocator>::end() const
 {
     return Iterator{mHead + mElemCount};
 }
 
+
+template <typename T, typename Allocator>
+typename Vector<T, Allocator>::Iterator Vector<T, Allocator>::Begin() const
+{
+    return begin();
+}
+
+template <typename T, typename Allocator>
+typename Vector<T, Allocator>::Iterator Vector<T, Allocator>::End() const
+{
+    return end();
+}
 }  // namespace Moon

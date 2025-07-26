@@ -2,25 +2,23 @@
 
 #include <VectorLib/vectorIterator.hpp>
 #include <cstddef>
-#include <cstdlib>
+#include <AllocatorLib/heapAllocator.hpp>
 #include <stdexcept>
 
 namespace Moon
 {
 
-template <typename T>
+// template <typename T>
+template <typename T, typename Allocator = HeapAllocator<T>>
 class Vector
 {
     using Iterator = VectorIterator<T>;
 
    public:
-    constexpr static size_t STARTING_CAPACITY = 10;
-
-   public:
     Vector()
-        : mCapacity(STARTING_CAPACITY),
+        : mCapacity(Allocator::STARTING_CAPACITY),
           mElemCount(0),
-          mHead(static_cast<T*>(malloc(sizeof(T) * mCapacity)))
+          mHead(Allocator::Allocate(mCapacity))
     {
         if (mHead == nullptr)
         {
@@ -28,15 +26,51 @@ class Vector
         }
     }
 
+    Vector(const size_t size, const T& elem = T())
+        : mCapacity(Allocator::GetNewCapacity(size)),
+          mElemCount(size),
+          mHead(Allocator::Allocate(mCapacity))
+    {
+        if (mHead == nullptr)
+        {
+            throw std::runtime_error(MALLOC_ERR_MSG);
+        }
+        for (size_t i = 0; i < size; ++i)
+        {
+             Allocator::Construct(mHead + i, elem);
+        }
+    }
+
+    // NOTE: Perfect forwarding
+    // T&& preserves the value category of the argument
+    // if the argument is an lvalue, T&& becomes T&,
+    // if the argument is an rvalue, T&& becomes T&&.
+    // Why not just const Args&, because r-values would then be treated as l-values, leading to copies
+    template <typename... Args>
+    Vector(const Args&&... args)
+        : mCapacity(Allocator::GetNewCapacity(sizeof...(args))),
+          mElemCount(sizeof...(args)),
+          mHead(Allocator::Allocate(mCapacity))
+    {
+        if (mHead == nullptr)
+        {
+            throw std::runtime_error(MALLOC_ERR_MSG);
+        }
+
+        size_t i = 0;
+        (Allocator::Construct(mHead + i++, args), ...);
+    }
+
     Vector(const Vector& other) noexcept
         : mCapacity(other.mCapacity),
           mElemCount(other.mElemCount),
-          mHead(static_cast<T*>(malloc(sizeof(T) * mCapacity)))
+          mHead(Allocator::Allocate(mCapacity))
     {
         for (int i = 0; i < other.mElemCount; ++i)
         {
-            new (mHead + i) T(other.mHead[i]);
+             Allocator::Construct(mHead + i, other.mHead[i]);
         }
+
     }
 
     Vector(Vector&& other) noexcept
@@ -56,18 +90,14 @@ class Vector
             Clear();
             if (mCapacity < other.mElemCount)
             {
-                const size_t newCapacity = GetNewCapacity(other.mElemCount);
-                mHead = static_cast<T*>(malloc(sizeof(T) * newCapacity));
-                if (mHead == nullptr)
-                {
-                    throw std::runtime_error(MALLOC_ERR_MSG);
-                }
+                const size_t newCapacity = Allocator::GetNewCapacity(other.mElemCount);
+                Allocator::Allocate(newCapacity);
                 mCapacity = newCapacity;
             }
 
             for (int i = 0; i < other.mElemCount; ++i)
             {
-                new (mHead + i) T(other.mHead[i]);
+                 Allocator::Construct(mHead + i, other.mHead[i]);
             }
             mElemCount = other.mElemCount;
         }
@@ -87,6 +117,7 @@ class Vector
             other.mElemCount = 0;
             other.mCapacity = 0;
         }
+        return *this;
     }
 
     template <typename... Args>
@@ -97,18 +128,21 @@ class Vector
     void PushBack(T&& elem);
     void PopBack();
     void Clear();
+    size_t Capacity() const noexcept;
     size_t Size() const noexcept;
     bool Empty() const noexcept;
     T& Back() const;
+    T& At(const size_t index) const;
 
-    T& operator[](const size_t index);
+    T& operator[](const size_t index) const noexcept;
     operator bool() const noexcept;
 
     Iterator begin() const;
     Iterator end() const;
+    Iterator Begin() const;
+    Iterator End() const;
 
    private:
-    size_t GetNewCapacity(size_t numOfElems) const noexcept;
     void Reallocate(size_t newCapacity, size_t startOffset = 0);
 
    private:
@@ -121,3 +155,4 @@ class Vector
 }  // namespace Moon
 
 #include <vectorLib/vector.ipp>
+
