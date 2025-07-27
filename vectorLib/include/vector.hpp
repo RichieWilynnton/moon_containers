@@ -42,7 +42,7 @@ class Vector
         }
     }
 
-    // NOTE: Perfect forwarding
+    // TODO: Perfect forwarding
     // T&& preserves the value category of the argument
     // if the argument is an lvalue, T&& becomes T&,
     // if the argument is an rvalue, T&& becomes T&&.
@@ -57,6 +57,7 @@ class Vector
     //     (Allocator::Construct(mHead + i++, std::forward<Args>(args)), ...);
     // }
 
+    // TODO: figure out how to copy elements from vectors with different allocators 
     Vector(const Vector& other) noexcept
         : mCapacity(other.mCapacity),
           mElemCount(other.mElemCount),
@@ -84,6 +85,7 @@ class Vector
         if (this != &other)
         {
             Clear();
+            Allocator::Deallocate(mHead);
             if (mCapacity < other.mElemCount)
             {
                 const size_t newCapacity = Allocator::GetNewCapacity(other.mElemCount);
@@ -119,7 +121,7 @@ class Vector
     ~Vector()
     {
         Clear();
-        Allocator::Deallocate(mHead, mCapacity);
+        Allocator::Deallocate(mHead);
     }
 
     template <typename... Args>

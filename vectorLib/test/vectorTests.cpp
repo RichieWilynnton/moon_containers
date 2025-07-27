@@ -1,10 +1,11 @@
-#include <VectorLib/vector.hpp>
-#include <CommonTestLib/dummy.hpp>
-#include <CommonTestLib/dummyTracker.hpp>
-#include <AllocatorLib/heapAllocator.hpp>
-
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+
+#include <AllocatorLib/debugAllocator.hpp>
+#include <AllocatorLib/heapAllocator.hpp>
+#include <CommonTestLib/dummy.hpp>
+#include <CommonTestLib/dummyTracker.hpp>
+#include <VectorLib/vector.hpp>
 
 namespace Moon::Test
 {
@@ -13,6 +14,8 @@ using Dummy = Moon::Common::Test::Dummy;
 class VectorFixture : public ::testing::Test
 {
    protected:
+    template <typename T>
+    using DebugVector = Vector<T, DebugAllocator<T>>;
     void SetUp() override
     {
         ::testing::GTEST_FLAG(throw_on_failure) = true;
@@ -23,6 +26,8 @@ class VectorFixture : public ::testing::Test
 
     void TearDown() override
     {
+
+    EXPECT_NO_THROW(DebugAllocator<Dummy>::ReportLeaks());
         delete dummyTracker;
         Dummy::tracker = nullptr;
     }
@@ -35,30 +40,29 @@ class VectorFixture : public ::testing::Test
     DummyTracker* dummyTracker;
 };
 
-
 TEST_F(VectorFixture, WHEN_vector_is_created_THEN_no_elements_are_constructed)
 {
     EXPECT_CALL(*dummyTracker, DefaultConstructor()).Times(0);
     EXPECT_CALL(*dummyTracker, ArgConstructor()).Times(0);
     EXPECT_CALL(*dummyTracker, CopyConstructor()).Times(0);
     EXPECT_CALL(*dummyTracker, Destructor()).Times(0);
-    Vector<Dummy> vector;
+    DebugVector<Dummy> vector;
 }
 
 TEST_F(VectorFixture, WHEN_vector_is_created_THEN_it_is_empty)
 {
-    Vector<Dummy> vector;
+    DebugVector<Dummy> vector;
     EXPECT_TRUE(vector.Empty());
     EXPECT_EQ(vector.Size(), 0);
 }
 
-TEST_F(VectorFixture, WHEN_push_r_value_elements_THEN_elements_are_moved_onto_vector)
+TEST_F(VectorFixture,
+       WHEN_push_r_value_elements_THEN_elements_are_moved_onto_vector)
 {
-    Vector<Dummy> vector;
+    DebugVector<Dummy> vector;
 
-    EXPECT_CALL(*dummyTracker, MoveConstructor())
-        .Times(1);  
-    EXPECT_CALL(*dummyTracker, Destructor()).Times(1);  
+    EXPECT_CALL(*dummyTracker, MoveConstructor()).Times(1);
+    EXPECT_CALL(*dummyTracker, Destructor()).Times(1);
     vector.PushBack(Dummy(42));
     BlockExpectations();
 }
@@ -66,7 +70,7 @@ TEST_F(VectorFixture, WHEN_push_r_value_elements_THEN_elements_are_moved_onto_ve
 TEST_F(VectorFixture,
        WHEN_push_l_value_elements_THEN_elements_are_copied_onto_vector)
 {
-    Vector<Dummy> vector;
+    DebugVector<Dummy> vector;
 
     Dummy d{2};
 
@@ -79,9 +83,10 @@ TEST_F(VectorFixture,
     BlockExpectations();
 }
 
-TEST_F(VectorFixture, WHEN_emplace_is_called_THEN_element_is_constructed_in_place)
+TEST_F(VectorFixture,
+       WHEN_emplace_is_called_THEN_element_is_constructed_in_place)
 {
-    Vector<Dummy> vector;
+    DebugVector<Dummy> vector;
 
     EXPECT_CALL(*dummyTracker, ArgConstructor()).Times(1);
     EXPECT_CALL(*dummyTracker, CopyConstructor()).Times(0);
@@ -94,13 +99,12 @@ TEST_F(VectorFixture, WHEN_emplace_is_called_THEN_element_is_constructed_in_plac
 
 TEST_F(VectorFixture, WHEN_pop_elements_THEN_vector_size_decreases)
 {
-    Vector<Dummy> vector;
+    DebugVector<Dummy> vector;
 
     vector.PushBack(Dummy(1));
     vector.PushBack(Dummy(2));
-    
-    EXPECT_CALL(*dummyTracker, Destructor())
-        .Times(2);  
+
+    EXPECT_CALL(*dummyTracker, Destructor()).Times(2);
 
     EXPECT_EQ(vector.Size(), 2);
     vector.PopBack();
@@ -111,7 +115,7 @@ TEST_F(VectorFixture, WHEN_pop_elements_THEN_vector_size_decreases)
 
 TEST_F(VectorFixture, WHEN_elements_are_present_THEN_top_returns_last_element)
 {
-    Vector<Dummy> vector;
+    DebugVector<Dummy> vector;
 
     vector.PushBack(Dummy(1));
     EXPECT_EQ(vector.Back().value, 1);
@@ -126,9 +130,11 @@ TEST_F(VectorFixture, WHEN_elements_are_present_THEN_top_returns_last_element)
     EXPECT_EQ(vector.Back().value, 3);
 }
 
-TEST_F(VectorFixture, WHEN_vector_reallocation_is_triggered_THEN_no_copies_are_made_AND_no_destructors_are_called)
+TEST_F(
+    VectorFixture,
+    WHEN_vector_reallocation_is_triggered_THEN_no_copies_are_made_AND_no_destructors_are_called)
 {
-    Vector<Dummy> vector;
+    DebugVector<Dummy> vector;
     const size_t startingCapacity = HeapAllocator<Dummy>::STARTING_CAPACITY;
 
     for (int i = 0; i < startingCapacity; ++i)
@@ -139,14 +145,14 @@ TEST_F(VectorFixture, WHEN_vector_reallocation_is_triggered_THEN_no_copies_are_m
     EXPECT_CALL(*dummyTracker, MoveConstructor()).Times(startingCapacity + 1);
     EXPECT_CALL(*dummyTracker, Destructor()).Times(startingCapacity + 1);
 
-    vector.PushBack(Dummy(42));  
-    
+    vector.PushBack(Dummy(42));
+
     BlockExpectations();
 }
 
 TEST_F(VectorFixture, WHEN_elements_are_popped_THEN_destructors_are_called)
 {
-    Vector<Dummy> vector;
+    DebugVector<Dummy> vector;
 
     vector.PushBack(Dummy(1));
 
@@ -156,16 +162,15 @@ TEST_F(VectorFixture, WHEN_elements_are_popped_THEN_destructors_are_called)
     BlockExpectations();
 }
 
-TEST_F(
-    VectorFixture,
-    WHEN_copy_constructor_is_called_THEN_elements_are_copied_properly)
+TEST_F(VectorFixture,
+       WHEN_copy_constructor_is_called_THEN_elements_are_copied_properly)
 {
-    Vector<Dummy> vector1;
+    DebugVector<Dummy> vector1;
     vector1.PushBack(Dummy(1));
     vector1.PushBack(Dummy(2));
 
     EXPECT_CALL(*dummyTracker, CopyConstructor()).Times(2);
-    Vector<Dummy> vector2(vector1);
+    DebugVector<Dummy> vector2(vector1);
     EXPECT_EQ(vector2.Size(), 2);
     EXPECT_EQ(vector2.Back().value, 2);
 
@@ -176,11 +181,11 @@ TEST_F(
     VectorFixture,
     WHEN_copy_constructor_is_called_THEN_original_elements_are_not_modified_on_changes_to_new_vector)
 {
-    Vector<Dummy> vector1;
+    DebugVector<Dummy> vector1;
     vector1.PushBack(Dummy(1));
     vector1.PushBack(Dummy(2));
 
-    Vector<Dummy> vector2(vector1);
+    DebugVector<Dummy> vector2(vector1);
 
     vector2.Back() = Dummy(3);
     EXPECT_EQ(vector2.Back().value, 3);
@@ -193,13 +198,14 @@ TEST_F(
     BlockExpectations();
 }
 
-TEST_F(VectorFixture, WHEN_copy_assignment_is_called_THEN_elements_are_copied_properly)
+TEST_F(VectorFixture,
+       WHEN_copy_assignment_is_called_THEN_elements_are_copied_properly)
 {
-    Vector<Dummy> vector1;
+    DebugVector<Dummy> vector1;
     vector1.PushBack(Dummy(1));
     vector1.PushBack(Dummy(2));
 
-    Vector<Dummy> vector2;
+    DebugVector<Dummy> vector2;
     EXPECT_CALL(*dummyTracker, CopyConstructor()).Times(2);
     vector2 = vector1;
     EXPECT_EQ(vector2.Size(), 2);
@@ -207,16 +213,15 @@ TEST_F(VectorFixture, WHEN_copy_assignment_is_called_THEN_elements_are_copied_pr
     BlockExpectations();
 }
 
-
 TEST_F(
     VectorFixture,
     WHEN_copy_assignment_is_called_THEN_original_elements_are_not_modified_on_changes_to_new_vector)
 {
-    Vector<Dummy> vector1;
+    DebugVector<Dummy> vector1;
     vector1.PushBack(Dummy(1));
     vector1.PushBack(Dummy(2));
 
-    Vector<Dummy> vector2 = vector1;
+    DebugVector<Dummy> vector2 = vector1;
 
     vector2.Back() = Dummy(3);
     EXPECT_EQ(vector2.Back().value, 3);
@@ -228,42 +233,43 @@ TEST_F(
     BlockExpectations();
 }
 
-TEST_F(VectorFixture, WHEN_move_constructor_is_called_THEN_vector_is_moved_correctly_and_old_vector_is_empty)
+TEST_F(
+    VectorFixture,
+    WHEN_move_constructor_is_called_THEN_vector_is_moved_correctly_and_old_vector_is_empty)
 {
-    Vector<Dummy> vector1;
+    DebugVector<Dummy> vector1;
     vector1.PushBack(Dummy(1));
     vector1.PushBack(Dummy(2));
 
     EXPECT_CALL(*dummyTracker, MoveConstructor()).Times(0);
-    Vector<Dummy> vector2(std::move(vector1));
+    DebugVector<Dummy> vector2(std::move(vector1));
     EXPECT_EQ(vector2.Size(), 2);
     EXPECT_EQ(vector2.Back().value, 2);
-    EXPECT_TRUE(vector1.Empty());  
+    EXPECT_TRUE(vector1.Empty());
 
     BlockExpectations();
 }
-
 
 TEST_F(
     VectorFixture,
     WHEN_move_assignment_is_called_THEN_vector_is_moved_properly_AND_old_vector_is_empty)
 {
-    Vector<Dummy> vector1;
+    DebugVector<Dummy> vector1;
     vector1.PushBack(Dummy(1));
     vector1.PushBack(Dummy(2));
 
     EXPECT_CALL(*dummyTracker, MoveConstructor()).Times(0);
-    Vector<Dummy> vector2 = std::move(vector1);
+    DebugVector<Dummy> vector2 = std::move(vector1);
     EXPECT_EQ(vector2.Size(), 2);
     EXPECT_EQ(vector2.Back().value, 2);
-    EXPECT_TRUE(vector1.Empty());  
+    EXPECT_TRUE(vector1.Empty());
 
     BlockExpectations();
 }
 
 TEST_F(VectorFixture, WHEN_vector_is_cleared_THEN_all_elements_are_destructed)
 {
-    Vector<Dummy> vector;
+    DebugVector<Dummy> vector;
 
     vector.PushBack(Dummy(1));
     vector.PushBack(Dummy(2));
@@ -275,19 +281,47 @@ TEST_F(VectorFixture, WHEN_vector_is_cleared_THEN_all_elements_are_destructed)
     BlockExpectations();
 }
 
-TEST_F(VectorFixture, WHEN_at_on_out_of_bounds_index_THEN_exception_is_thrown) {
-    Vector<Dummy> vector;
+TEST_F(VectorFixture, WHEN_at_on_out_of_bounds_index_THEN_exception_is_thrown)
+{
+    DebugVector<Dummy> vector;
     EXPECT_THROW(vector.At(0), std::out_of_range);
 }
 
-// TEST_F(VectorFixture, WHEN_variadic_constructor_is_called_THEN_elements_are_constructed_with_args)
+TEST_F(VectorFixture, WHEN_many_elements_are_pushed_and_popped_THEN_no_leaks)
+{
+    DebugVector<Dummy> vector;
+
+    for (int i = 0; i < 100; ++i)
+    {
+        vector.PushBack(Dummy(i));
+    }
+
+    EXPECT_EQ(vector.Size(), 100);
+
+    for (int i = 0; i < 50; ++i)
+    {
+        vector.PopBack();
+    }
+
+    EXPECT_EQ(vector.Size(), 50);
+
+    for (int i = 0; i < 50; ++i)
+    {
+        vector.PushBack(Dummy(i + 100));
+    }
+
+    EXPECT_EQ(vector.Size(), 100);
+}
+
+// TEST_F(VectorFixture,
+// WHEN_variadic_constructor_is_called_THEN_elements_are_constructed_with_args)
 // {
 //     EXPECT_CALL(*dummyTracker, ArgConstructor()).Times(3);
 //     EXPECT_CALL(*dummyTracker, CopyConstructor()).Times(0);
 //     EXPECT_CALL(*dummyTracker, MoveConstructor()).Times(0);
 //     EXPECT_CALL(*dummyTracker, Destructor()).Times(0);
 //
-//     Vector<Dummy> vector(1, 2, 3);
+//     DebugVector<Dummy> vector(1, 2, 3);
 //
 //     EXPECT_EQ(vector.Size(), 3);
 //     EXPECT_EQ(vector[0].value, 1);
@@ -297,11 +331,5 @@ TEST_F(VectorFixture, WHEN_at_on_out_of_bounds_index_THEN_exception_is_thrown) {
 //     BlockExpectations();
 // }
 
-TEST_F(VectorFixture, WHEN_variadic_constructor_is_called_with_no_args_THEN_vector_is_empty)
-{
-    Vector<Dummy> vector;
-    EXPECT_TRUE(vector.Empty());
-    EXPECT_EQ(vector.Size(), 0);
-}
 
-}
+}  // namespace Moon::Test

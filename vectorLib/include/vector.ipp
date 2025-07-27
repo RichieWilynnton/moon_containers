@@ -130,7 +130,7 @@ void Vector<T, Allocator>::Reallocate(size_t newCapacity, size_t startOffset)
         Allocator::Destruct(mHead + i);
     }
     
-    Allocator::Deallocate(mHead, mCapacity);
+    Allocator::Deallocate(mHead);
 
     mHead = newHead;
     mCapacity = newCapacity;

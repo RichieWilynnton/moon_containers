@@ -60,6 +60,7 @@ class Stack
         if (this != &other)
         {
             Clear();
+            free(mHead);
             if (mCapacity < other.mElemCount)
             {
                 const size_t newCapacity = GetNewCapacity(other.mElemCount);

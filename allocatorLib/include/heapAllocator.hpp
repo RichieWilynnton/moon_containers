@@ -1,9 +1,7 @@
 #pragma once
 
-#include <CommonLib/math.hpp>
 #include <cstddef>
 #include <cstdlib>
-#include <utility>  
 
 namespace Moon
 {
@@ -13,36 +11,19 @@ class HeapAllocator
 {
    public:
     static constexpr size_t STARTING_CAPACITY = 1;
-    static T* Allocate(size_t size)
-    {
-        return static_cast<T*>(malloc(sizeof(T) * size));
-    }
+    static T* Allocate(size_t size);
 
-    static void Deallocate(T*& ptr, size_t size)
-    {
-        // no check for nullptr
-        free(ptr);
-        ptr = nullptr;
-    }
+    static void Deallocate(T*& ptr);
 
     template <typename... Args>
-    static void Construct(T* ptr, Args&&... args)
-    {
-        new (ptr) T(std::forward<Args>(args)...);
-    }
+    static void Construct(T* ptr, Args&&... args);
 
-    static void Destruct(T* ptr) noexcept
-    {
-        // no check for nullptr
-        ptr->~T();  
-    }
+    static void Destruct(T* ptr) noexcept;
 
-    static size_t GetNewCapacity(const size_t numOfElems) noexcept
-    {
-        return Util::Math::NextPowerOfTwo(numOfElems + 1);
-    }
+    static size_t GetNewCapacity(const size_t numOfElems) noexcept;
 };
 }  // namespace Moon
+#include <AllocatorLib/heapAllocator.ipp>
 //
 // NOTE: Benefits of having allocators
 // 1. Flexible memory management: Allocators allow you to customize how memory is allocated and deallocated, which can lead to more controlled memory usage.
