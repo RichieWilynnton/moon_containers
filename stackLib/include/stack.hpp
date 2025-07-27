@@ -12,6 +12,7 @@ namespace Moon
  default constructor for each element. Malloc has to be used instead. Note:
  Destructor has to be called manually for each element in the array,
  * */
+// TODO: Use custom allocator for Stack, like in Vector
 template <typename T>
 class Stack
 {

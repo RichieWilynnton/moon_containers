@@ -50,13 +50,14 @@ class Dummy
 
     ~Dummy()
     {
-        tracker->Destructor();
+        if (tracker)
+        {
+            tracker->Destructor();
+        }
     }
 
     int value = 0;
 
     static DummyTracker* tracker;
 };
-}
-
-
+}  // namespace Moon::Common::Test

@@ -4,6 +4,10 @@ project(MoonContainers)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 include(${CMAKE_CURRENT_SOURCE_DIR}/CMakeFunctions.cmake)
 
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug)  
+endif()
+
 enable_testing()
 option(RUN_TESTS_AFTER_BUILD "Run tests automatically after building" ON)
 

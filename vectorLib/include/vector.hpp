@@ -1,9 +1,10 @@
 #pragma once
 
 #include <VectorLib/vectorIterator.hpp>
-#include <cstddef>
 #include <AllocatorLib/heapAllocator.hpp>
+
 #include <stdexcept>
+#include <cstddef>
 
 namespace Moon
 {
@@ -46,20 +47,15 @@ class Vector
     // if the argument is an lvalue, T&& becomes T&,
     // if the argument is an rvalue, T&& becomes T&&.
     // Why not just const Args&, because r-values would then be treated as l-values, leading to copies
-    template <typename... Args>
-    Vector(const Args&&... args)
-        : mCapacity(Allocator::GetNewCapacity(sizeof...(args))),
-          mElemCount(sizeof...(args)),
-          mHead(Allocator::Allocate(mCapacity))
-    {
-        if (mHead == nullptr)
-        {
-            throw std::runtime_error(MALLOC_ERR_MSG);
-        }
-
-        size_t i = 0;
-        (Allocator::Construct(mHead + i++, args), ...);
-    }
+    // template <typename... Args>
+    // Vector(Args&&... args)
+    //     : mCapacity(Allocator::GetNewCapacity(sizeof...(args))),
+    //       mElemCount(sizeof...(args)),
+    //       mHead(Allocator::Allocate(mCapacity))
+    // {
+    //     size_t i = 0;
+    //     (Allocator::Construct(mHead + i++, std::forward<Args>(args)), ...);
+    // }
 
     Vector(const Vector& other) noexcept
         : mCapacity(other.mCapacity),
@@ -91,7 +87,7 @@ class Vector
             if (mCapacity < other.mElemCount)
             {
                 const size_t newCapacity = Allocator::GetNewCapacity(other.mElemCount);
-                Allocator::Allocate(newCapacity);
+                mHead = Allocator::Allocate(newCapacity);
                 mCapacity = newCapacity;
             }
 
@@ -120,6 +116,12 @@ class Vector
         return *this;
     }
 
+    ~Vector()
+    {
+        Clear();
+        Allocator::Deallocate(mHead, mCapacity);
+    }
+
     template <typename... Args>
     void EmplaceBack(Args&&... args);
 
@@ -135,7 +137,6 @@ class Vector
     T& At(const size_t index) const;
 
     T& operator[](const size_t index) const noexcept;
-    operator bool() const noexcept;
 
     Iterator begin() const;
     Iterator end() const;

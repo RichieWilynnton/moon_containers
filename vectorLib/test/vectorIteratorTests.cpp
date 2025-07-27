@@ -19,10 +19,9 @@ class VectorIteratorFixture : public ::testing::Test
         ::testing::InitGoogleMock();
         dummyTracker = new DummyTracker();
         Dummy::tracker = dummyTracker;
-        
-        vector.PushBack(Dummy(1));
-        vector.PushBack(Dummy(2));
-        vector.PushBack(Dummy(3));
+        vector.PushBack(1);
+        vector.PushBack(2);
+        vector.PushBack(3);
     }
 
     void TearDown() override

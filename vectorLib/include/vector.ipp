@@ -60,7 +60,7 @@ void Vector<T, Allocator>::PopBack()
     {
         throw std::runtime_error("PopBack(): empty vector cannot be popped");
     }
-    mHead[mElemCount - 1].~T();
+    Allocator::Destruct(mHead + mElemCount - 1);
     --mElemCount;
 }
 
@@ -69,7 +69,7 @@ void Vector<T, Allocator>::Clear()
 {
     for (int i = 0; i < mElemCount; ++i)
     {
-        mHead[i].~T();
+         Allocator::Destruct(mHead + i);
     }
     mElemCount = 0;
 }
@@ -112,12 +112,6 @@ T& Vector<T, Allocator>::At(const size_t index) const
 }
 
 template <typename T, typename Allocator>
-Vector<T, Allocator>::operator bool() const noexcept
-{
-    return mElemCount != 0;
-}
-
-template <typename T, typename Allocator>
 size_t Vector<T, Allocator>::Capacity() const noexcept
 {
     return mCapacity;
@@ -133,7 +127,7 @@ void Vector<T, Allocator>::Reallocate(size_t newCapacity, size_t startOffset)
     for (int i = 0; i < mElemCount; ++i)
     {
         Allocator::Construct(newHead + i + startOffset, std::move(mHead[i]));
-        mHead[i].~T();  
+        Allocator::Destruct(mHead + i);
     }
     
     Allocator::Deallocate(mHead, mCapacity);
@@ -153,7 +147,6 @@ typename Vector<T, Allocator>::Iterator Vector<T, Allocator>::end() const
 {
     return Iterator{mHead + mElemCount};
 }
-
 
 template <typename T, typename Allocator>
 typename Vector<T, Allocator>::Iterator Vector<T, Allocator>::Begin() const

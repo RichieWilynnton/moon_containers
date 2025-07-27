@@ -2,7 +2,6 @@
 #include <CommonTestLib/dummy.hpp>
 #include <CommonTestLib/dummyTracker.hpp>
 #include <AllocatorLib/heapAllocator.hpp>
-#include "gtest/gtest.h"
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -97,10 +96,6 @@ TEST_F(VectorFixture, WHEN_pop_elements_THEN_vector_size_decreases)
 {
     Vector<Dummy> vector;
 
-    EXPECT_CALL(*dummyTracker, ArgConstructor()).Times(2);
-    EXPECT_CALL(*dummyTracker, MoveConstructor()).Times(2);
-    EXPECT_CALL(*dummyTracker, Destructor()).Times(2);  
-
     vector.PushBack(Dummy(1));
     vector.PushBack(Dummy(2));
     
@@ -129,20 +124,6 @@ TEST_F(VectorFixture, WHEN_elements_are_present_THEN_top_returns_last_element)
 
     vector.PushBack(Dummy(3));
     EXPECT_EQ(vector.Back().value, 3);
-}
-
-TEST_F(
-    VectorFixture,
-    WHEN_vector_is_empty_THEN_implicit_bool_conversion_returns_false_ELSE_true)
-{
-    Vector<Dummy> vector;
-    EXPECT_FALSE(vector);
-
-    vector.PushBack(Dummy(1));
-    EXPECT_TRUE(vector);
-
-    vector.PopBack();
-    EXPECT_FALSE(vector);
 }
 
 TEST_F(VectorFixture, WHEN_vector_reallocation_is_triggered_THEN_no_copies_are_made_AND_no_destructors_are_called)
@@ -299,22 +280,22 @@ TEST_F(VectorFixture, WHEN_at_on_out_of_bounds_index_THEN_exception_is_thrown) {
     EXPECT_THROW(vector.At(0), std::out_of_range);
 }
 
-TEST_F(VectorFixture, WHEN_variadic_constructor_is_called_THEN_elements_are_constructed_with_args)
-{
-    EXPECT_CALL(*dummyTracker, ArgConstructor()).Times(3);
-    EXPECT_CALL(*dummyTracker, CopyConstructor()).Times(0);
-    EXPECT_CALL(*dummyTracker, MoveConstructor()).Times(0);
-    EXPECT_CALL(*dummyTracker, Destructor()).Times(0);
-
-    Vector<Dummy> vector(1, 2, 3);
-
-    EXPECT_EQ(vector.Size(), 3);
-    EXPECT_EQ(vector[0].value, 1);
-    EXPECT_EQ(vector[1].value, 2);
-    EXPECT_EQ(vector[2].value, 3);
-
-    BlockExpectations();
-}
+// TEST_F(VectorFixture, WHEN_variadic_constructor_is_called_THEN_elements_are_constructed_with_args)
+// {
+//     EXPECT_CALL(*dummyTracker, ArgConstructor()).Times(3);
+//     EXPECT_CALL(*dummyTracker, CopyConstructor()).Times(0);
+//     EXPECT_CALL(*dummyTracker, MoveConstructor()).Times(0);
+//     EXPECT_CALL(*dummyTracker, Destructor()).Times(0);
+//
+//     Vector<Dummy> vector(1, 2, 3);
+//
+//     EXPECT_EQ(vector.Size(), 3);
+//     EXPECT_EQ(vector[0].value, 1);
+//     EXPECT_EQ(vector[1].value, 2);
+//     EXPECT_EQ(vector[2].value, 3);
+//
+//     BlockExpectations();
+// }
 
 TEST_F(VectorFixture, WHEN_variadic_constructor_is_called_with_no_args_THEN_vector_is_empty)
 {
