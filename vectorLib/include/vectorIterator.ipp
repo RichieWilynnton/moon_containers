@@ -1,93 +1,100 @@
 #pragma once
+
 #include <VectorLib/vectorIterator.hpp>
 
 namespace Moon
 {
-template <typename T, typename Allocator>
-VectorIterator<T, Allocator>& VectorIterator<T, Allocator>::operator++() noexcept
+template <typename T>
+VectorIterator<T>& VectorIterator<T>::operator++() noexcept
 {
     return ++mPtr, *this;
 }
 
-template <typename T, typename Allocator>
-VectorIterator<T, Allocator> VectorIterator<T, Allocator>::operator++(int) noexcept
+template <typename T>
+VectorIterator<T> VectorIterator<T>::operator++(int) noexcept
 {
-    VectorIterator<T, Allocator> temp{mPtr};
+    VectorIterator<T> temp{mPtr};
     ++mPtr;
     return temp;
 }
 
-template <typename T, typename Allocator>
-VectorIterator<T, Allocator>& VectorIterator<T, Allocator>::operator--() noexcept
+template <typename T>
+VectorIterator<T>& VectorIterator<T>::operator--() noexcept
 {
     return --mPtr, *this;
 }
 
-template <typename T, typename Allocator>
-VectorIterator<T, Allocator> VectorIterator<T, Allocator>::operator--(int) noexcept
+template <typename T>
+VectorIterator<T> VectorIterator<T>::operator--(int) noexcept
 {
-    VectorIterator<T, Allocator> temp{mPtr};
+    VectorIterator<T> temp{mPtr};
     --mPtr;
     return temp;
 }
 
-template <typename T, typename Allocator>
-VectorIterator<T, Allocator> VectorIterator<T, Allocator>::operator+(int offset) const noexcept
+template <typename T>
+VectorIterator<T> VectorIterator<T>::operator+(int offset) const noexcept
 {
-    return VectorIterator<T, Allocator>{mPtr + offset};
+    return VectorIterator<T>{mPtr + offset};
 }
 
-template <typename T, typename Allocator>
-VectorIterator<T, Allocator> VectorIterator<T, Allocator>::operator-(int offset) const noexcept
+template <typename T>
+VectorIterator<T> VectorIterator<T>::operator-(int offset) const noexcept
 {
-    return VectorIterator<T, Allocator>{mPtr - offset};
+    return VectorIterator<T>{mPtr - offset};
 }
 
-template <typename T, typename Allocator>
-bool VectorIterator<T, Allocator>::operator==(const VectorIterator& other) const noexcept
+template <typename T>
+size_t VectorIterator<T>::operator-(const VectorIterator& other) const noexcept
+{
+    return static_cast<size_t>(mPtr - other.mPtr);
+}
+
+template <typename T>
+bool VectorIterator<T>::operator==(const VectorIterator& other) const noexcept
 {
     return mPtr == other.mPtr;
 }
 
 
-template <typename T, typename Allocator>
-bool VectorIterator<T, Allocator>::operator!=(const VectorIterator& other) const noexcept
+template <typename T>
+bool VectorIterator<T>::operator!=(const VectorIterator& other) const noexcept
 {
     return mPtr != other.mPtr;
 }
 
-template <typename T, typename Allocator>
-bool VectorIterator<T, Allocator>::operator>(const VectorIterator& other) const noexcept
+template <typename T>
+bool VectorIterator<T>::operator>(const VectorIterator& other) const noexcept
 {
     return mPtr > other.mPtr; 
 }
 
-template <typename T, typename Allocator>
-bool VectorIterator<T, Allocator>::operator<(const VectorIterator& other) const noexcept
+template <typename T>
+bool VectorIterator<T>::operator<(const VectorIterator& other) const noexcept
 {
     return mPtr < other.mPtr; 
 }
 
-template <typename T, typename Allocator>
-bool VectorIterator<T, Allocator>::operator>=(const VectorIterator& other) const noexcept
+template <typename T>
+bool VectorIterator<T>::operator>=(const VectorIterator& other) const noexcept
 {
     return mPtr >= other.mPtr; 
 }
 
-template <typename T, typename Allocator>
-bool VectorIterator<T, Allocator>::operator<=(const VectorIterator& other) const noexcept
+template <typename T>
+bool VectorIterator<T>::operator<=(const VectorIterator& other) const noexcept
 {
     return mPtr <= other.mPtr; 
 }
 
-template <typename T, typename Allocator>
-T& VectorIterator<T, Allocator>::operator*()
+template <typename T>
+T& VectorIterator<T>::operator*()
 {
     return *mPtr;
 }
 
-template <typename T, typename Allocator>
-T* VectorIterator<T, Allocator>::operator->() noexcept
+template <typename T>
+T* VectorIterator<T>::operator->() noexcept
 {
     return mPtr;
 }

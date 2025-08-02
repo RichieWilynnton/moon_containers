@@ -5,10 +5,11 @@
 namespace Moon
 {
 
-template <typename T, typename Allocator>
+// Forward declaration of the full Vector template
+template <typename U, typename Allocator>
 class Vector;
 
-template <typename T, typename Allocator = HeapAllocator<T>>
+template <typename T>
 class VectorIterator
 {
    public:
@@ -18,6 +19,7 @@ class VectorIterator
     VectorIterator operator--(int) noexcept; 
     VectorIterator operator+(int offset) const noexcept;
     VectorIterator operator-(int offset) const noexcept;
+    size_t operator-(const VectorIterator& other) const noexcept;
 
     bool operator==(const VectorIterator& other) const noexcept;
     bool operator!=(const VectorIterator& other) const noexcept;
@@ -34,7 +36,8 @@ class VectorIterator
     VectorIterator(T* ptr) noexcept: mPtr(ptr) {};
     T* mPtr;
 
-    friend class Vector<T, Allocator>;  
+    template <typename U, typename Allocator>
+    friend class Vector;  
 };
 }  // namespace Moon
 

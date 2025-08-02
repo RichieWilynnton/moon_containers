@@ -8,7 +8,7 @@
 namespace Moon
 {
 
-template <typename T, typename Allocator> 
+template <typename T, typename Allocator>
 template <typename... Args>
 void Vector<T, Allocator>::EmplaceBack(Args&&... args)
 {
@@ -69,7 +69,7 @@ void Vector<T, Allocator>::Clear()
 {
     for (int i = 0; i < mElemCount; ++i)
     {
-         Allocator::Destruct(mHead + i);
+        Allocator::Destruct(mHead + i);
     }
     mElemCount = 0;
 }
@@ -96,7 +96,8 @@ T& Vector<T, Allocator>::Back() const
 template <typename T, typename Allocator>
 T& Vector<T, Allocator>::operator[](const size_t index) const noexcept
 {
-    assert(index < mElemCount && "operator[]: out of bounds vector access, assertion failed");
+    assert(index < mElemCount &&
+           "operator[]: out of bounds vector access, assertion failed");
     // no bounds checking
     return mHead[index];
 }
@@ -129,11 +130,30 @@ void Vector<T, Allocator>::Reallocate(size_t newCapacity, size_t startOffset)
         Allocator::Construct(newHead + i + startOffset, std::move(mHead[i]));
         Allocator::Destruct(mHead + i);
     }
-    
+
     Allocator::Deallocate(mHead);
 
     mHead = newHead;
     mCapacity = newCapacity;
+}
+
+template <typename T, typename Allocator>
+void Vector<T, Allocator>::AssignFrom(const Vector& other)
+{
+    Clear();
+    Allocator::Deallocate(mHead);
+    if (mCapacity < other.mElemCount)
+    {
+        const size_t newCapacity = Allocator::GetNewCapacity(other.mElemCount);
+        mHead = Allocator::Allocate(newCapacity);
+        mCapacity = newCapacity;
+    }
+
+    for (int i = 0; i < other.mElemCount; ++i)
+    {
+        Allocator::Construct(mHead + i, other.mHead[i]);
+    }
+    mElemCount = other.mElemCount;
 }
 
 template <typename T, typename Allocator>

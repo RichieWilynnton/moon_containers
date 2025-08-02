@@ -1,9 +1,7 @@
 #pragma once
 
-#include <VectorLib/vectorIterator.hpp>
 #include <AllocatorLib/heapAllocator.hpp>
-
-#include <stdexcept>
+#include <VectorLib/vectorIterator.hpp>
 #include <cstddef>
 
 namespace Moon
@@ -21,10 +19,6 @@ class Vector
           mElemCount(0),
           mHead(Allocator::Allocate(mCapacity))
     {
-        if (mHead == nullptr)
-        {
-            throw std::runtime_error(MALLOC_ERR_MSG);
-        }
     }
 
     Vector(const size_t size, const T& elem = T())
@@ -32,44 +26,37 @@ class Vector
           mElemCount(size),
           mHead(Allocator::Allocate(mCapacity))
     {
-        if (mHead == nullptr)
-        {
-            throw std::runtime_error(MALLOC_ERR_MSG);
-        }
         for (size_t i = 0; i < size; ++i)
         {
-             Allocator::Construct(mHead + i, elem);
+            Allocator::Construct(mHead + i, elem);
         }
     }
 
-    // TODO: Perfect forwarding
-    // T&& preserves the value category of the argument
-    // if the argument is an lvalue, T&& becomes T&,
-    // if the argument is an rvalue, T&& becomes T&&.
-    // Why not just const Args&, because r-values would then be treated as l-values, leading to copies
-    // template <typename... Args>
-    // Vector(Args&&... args)
-    //     : mCapacity(Allocator::GetNewCapacity(sizeof...(args))),
-    //       mElemCount(sizeof...(args)),
-    //       mHead(Allocator::Allocate(mCapacity))
-    // {
-    //     size_t i = 0;
-    //     (Allocator::Construct(mHead + i++, std::forward<Args>(args)), ...);
-    // }
+    Vector(const VectorIterator<T>& begin,
+           const VectorIterator<T>& end) noexcept
 
-    // TODO: figure out how to copy elements from vectors with different allocators 
-    Vector(const Vector& other) noexcept
-        : mCapacity(other.mCapacity),
-          mElemCount(other.mElemCount),
+        : mCapacity(Allocator::GetNewCapacity(end - begin)),
+          mElemCount(end - begin),
           mHead(Allocator::Allocate(mCapacity))
     {
-        for (int i = 0; i < other.mElemCount; ++i)
+        for (size_t i = 0; i < mElemCount; ++i)
         {
-             Allocator::Construct(mHead + i, other.mHead[i]);
+            Allocator::Construct(mHead + i, *(begin + i));
         }
-
     }
 
+    // NOTE: The templated constructor is not qualified to be a copy constructor
+    // because it is a template, hence why, this constructor is still needed.
+    // THIS APPLIES TO ALL THE OTHER DEFAULT CLASS FUNCTIONS
+    Vector(const Vector& other) noexcept : Vector(other.Begin(), other.End()) {}
+
+    template <typename OtherAllocator>
+    Vector(const Vector<T, OtherAllocator>& other) noexcept
+        : Vector(other.Begin(), other.End())
+    {
+    }
+
+    // TODO: add move constructor for different allocators
     Vector(Vector&& other) noexcept
         : mCapacity(other.mCapacity),
           mElemCount(other.mElemCount),
@@ -84,20 +71,17 @@ class Vector
     {
         if (this != &other)
         {
-            Clear();
-            Allocator::Deallocate(mHead);
-            if (mCapacity < other.mElemCount)
-            {
-                const size_t newCapacity = Allocator::GetNewCapacity(other.mElemCount);
-                mHead = Allocator::Allocate(newCapacity);
-                mCapacity = newCapacity;
-            }
+            AssignFrom(other);
+        }
+        return *this;
+    }
 
-            for (int i = 0; i < other.mElemCount; ++i)
-            {
-                 Allocator::Construct(mHead + i, other.mHead[i]);
-            }
-            mElemCount = other.mElemCount;
+    template <typename OtherAllocator>
+    Vector& operator=(const Vector<T, OtherAllocator>& other)
+    {
+        if (this != &other)
+        {
+            AssignFrom(other);
         }
         return *this;
     }
@@ -147,6 +131,7 @@ class Vector
 
    private:
     void Reallocate(size_t newCapacity, size_t startOffset = 0);
+    void AssignFrom(const Vector& other);
 
    private:
     static constexpr char const* MALLOC_ERR_MSG = "Vector(): malloc error";
@@ -158,4 +143,3 @@ class Vector
 }  // namespace Moon
 
 #include <vectorLib/vector.ipp>
-

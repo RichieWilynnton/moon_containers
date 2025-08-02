@@ -89,6 +89,15 @@ TEST_F(VectorIteratorFixture,
 }
 
 TEST_F(VectorIteratorFixture, 
+       WHEN_subtracting_iterator_THEN_returns_distance_between_iterators)
+{
+    auto it1 = vector.begin();
+    auto it2 = vector.end();
+    size_t distance = it2 - it1;
+    EXPECT_EQ(distance, 3);  
+}
+
+TEST_F(VectorIteratorFixture, 
        WHEN_comparing_equal_iterators_THEN_they_are_considered_equal)
 {
     auto it1 = vector.begin();

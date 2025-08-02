@@ -24,6 +24,7 @@ class VectorFixture : public ::testing::Test
         Dummy::tracker = dummyTracker;
     }
 
+
     void TearDown() override
     {
 
@@ -313,23 +314,49 @@ TEST_F(VectorFixture, WHEN_many_elements_are_pushed_and_popped_THEN_no_leaks)
     EXPECT_EQ(vector.Size(), 100);
 }
 
-// TEST_F(VectorFixture,
-// WHEN_variadic_constructor_is_called_THEN_elements_are_constructed_with_args)
-// {
-//     EXPECT_CALL(*dummyTracker, ArgConstructor()).Times(3);
-//     EXPECT_CALL(*dummyTracker, CopyConstructor()).Times(0);
-//     EXPECT_CALL(*dummyTracker, MoveConstructor()).Times(0);
-//     EXPECT_CALL(*dummyTracker, Destructor()).Times(0);
-//
-//     DebugVector<Dummy> vector(1, 2, 3);
-//
-//     EXPECT_EQ(vector.Size(), 3);
-//     EXPECT_EQ(vector[0].value, 1);
-//     EXPECT_EQ(vector[1].value, 2);
-//     EXPECT_EQ(vector[2].value, 3);
-//
-//     BlockExpectations();
-// }
 
+TEST_F(VectorFixture,
+       WHEN_constructor_is_called_with_iterator_THEN_elements_are_copied_properly)
+{
+    DebugVector<Dummy> vector1;
+    vector1.PushBack(Dummy(1));
+    vector1.PushBack(Dummy(2));
+
+    EXPECT_CALL(*dummyTracker, CopyConstructor()).Times(2);
+    Vector<Dummy, HeapAllocator<Dummy>> vector2(vector1.Begin(), vector1.End());
+    EXPECT_EQ(vector2.Size(), 2);
+    EXPECT_EQ(vector2.Back().value, 2);
+
+    BlockExpectations();
+}
+
+TEST_F(VectorFixture, WHEN_constructor_is_called_with_vector_of_different_allocator_THEN_elements_are_copied_properly)
+{
+    DebugVector<Dummy> vector1;
+    vector1.PushBack(Dummy(1));
+    vector1.PushBack(Dummy(2));
+
+    EXPECT_CALL(*dummyTracker, CopyConstructor()).Times(2);
+    Vector<Dummy, HeapAllocator<Dummy>> vector2(vector1);
+    EXPECT_EQ(vector2.Size(), 2);
+    EXPECT_EQ(vector2.Back().value, 2);
+
+    BlockExpectations();
+}
+
+
+TEST_F(VectorFixture, WHEN_copy_assignment_is_called_with_vector_of_different_allocator_THEN_elements_are_copied_properly)
+{
+    DebugVector<Dummy> vector1;
+    vector1.PushBack(Dummy(1));
+    vector1.PushBack(Dummy(2));
+
+    EXPECT_CALL(*dummyTracker, CopyConstructor()).Times(2);
+    Vector<Dummy, HeapAllocator<Dummy>> vector2 = vector1;
+    EXPECT_EQ(vector2.Size(), 2);
+    EXPECT_EQ(vector2.Back().value, 2);
+
+    BlockExpectations();
+}
 
 }  // namespace Moon::Test

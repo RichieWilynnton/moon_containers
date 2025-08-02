@@ -10,6 +10,9 @@ template <typename T>
 class HeapAllocator
 {
    public:
+    // TODO : implement this
+    static constexpr bool STATEFUL = false;
+
     static constexpr size_t STARTING_CAPACITY = 1;
     static T* Allocate(size_t size);
 
