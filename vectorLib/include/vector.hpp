@@ -7,7 +7,6 @@
 namespace Moon
 {
 
-// template <typename T>
 template <typename T, typename Allocator = HeapAllocator<T>>
 class Vector
 {

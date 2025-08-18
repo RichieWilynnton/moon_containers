@@ -32,7 +32,6 @@ class VectorIterator
     T* operator->() noexcept;
 
    private:
-    VectorIterator() noexcept;
     VectorIterator(T* ptr) noexcept: mPtr(ptr) {};
     T* mPtr;
 

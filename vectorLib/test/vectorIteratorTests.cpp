@@ -227,4 +227,44 @@ TEST_F(VectorIteratorFixture,
     
     EXPECT_THAT(values, ::testing::ElementsAre(1, 2, 3));
 }
+
+TEST_F(VectorIteratorFixture,
+       WHEN_copy_constructing_iterator_THEN_new_iterator_points_to_same_element)
+{
+    auto it1 = vector.begin();
+    ++it1;
+    auto it2 = it1; 
+    EXPECT_EQ(it1, it2);
+    EXPECT_EQ(it2->value, 2);
+}
+
+TEST_F(VectorIteratorFixture,
+       WHEN_move_constructing_iterator_THEN_new_iterator_points_to_same_element)
+{
+    auto it1 = vector.begin();
+    ++it1;
+    auto it2 = std::move(it1); 
+    EXPECT_EQ(it2->value, 2);
+}
+
+TEST_F(VectorIteratorFixture,
+       WHEN_copy_assigning_iterator_THEN_iterator_points_to_same_element)
+{
+    auto it1 = vector.begin();
+    ++it1;
+    auto it2 = vector.begin();
+    it2 = it1; 
+    EXPECT_EQ(it2, it1);
+    EXPECT_EQ(it2->value, 2);
+}
+
+TEST_F(VectorIteratorFixture,
+       WHEN_move_assigning_iterator_THEN_iterator_points_to_same_element)
+{
+    auto it1 = vector.begin();
+    ++it1;
+    auto it2 = vector.begin();
+    it2 = std::move(it1); 
+    EXPECT_EQ(it2->value, 2);
+}
 }  // namespace Moon::Test

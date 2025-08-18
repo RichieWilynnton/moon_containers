@@ -1,11 +1,11 @@
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
-
 #include <AllocatorLib/debugAllocator.hpp>
 #include <AllocatorLib/heapAllocator.hpp>
 #include <CommonTestLib/dummy.hpp>
 #include <CommonTestLib/dummyTracker.hpp>
 #include <VectorLib/vector.hpp>
+
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
 namespace Moon::Test
 {
@@ -16,6 +16,7 @@ class VectorFixture : public ::testing::Test
    protected:
     template <typename T>
     using DebugVector = Vector<T, DebugAllocator<T>>;
+
     void SetUp() override
     {
         ::testing::GTEST_FLAG(throw_on_failure) = true;

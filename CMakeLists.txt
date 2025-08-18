@@ -32,8 +32,10 @@ set(ALL_TEST_TARGETS "" CACHE INTERNAL "List of all test targets")
 add_subdirectory(stackLib)
 add_subdirectory(pointerLib)
 add_subdirectory(vectorLib)
+add_subdirectory(mapLib)
 add_subdirectory(commonLib)
 add_subdirectory(allocatorLib)
+add_subdirectory(collisionHandlerLib)
 
 if(RUN_TESTS_AFTER_BUILD)
     add_custom_target(run_all_tests ALL
