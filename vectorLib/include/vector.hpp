@@ -8,20 +8,22 @@ namespace Moon
 {
 
 template <typename T, typename Allocator = HeapAllocator<T>>
-class Vector
+class Vector : Allocator
 {
     using Iterator = VectorIterator<T>;
 
    public:
-    Vector()
-        : mCapacity(Allocator::STARTING_CAPACITY),
+    Vector(Allocator allocator = Allocator()) noexcept
+        : Allocator(std::move(allocator)),
+          mCapacity(Allocator::STARTING_CAPACITY),
           mElemCount(0),
           mHead(Allocator::Allocate(mCapacity))
     {
     }
 
-    Vector(const size_t size, const T& elem = T())
-        : mCapacity(Allocator::GetNewCapacity(size)),
+    Vector(const size_t size, const T& elem = T(), Allocator allocator = Allocator()) noexcept
+        : Allocator(std::move(allocator)),
+          mCapacity(Allocator::GetNewCapacity(size)),
           mElemCount(size),
           mHead(Allocator::Allocate(mCapacity))
     {
@@ -32,9 +34,9 @@ class Vector
     }
 
     Vector(const VectorIterator<T>& begin,
-           const VectorIterator<T>& end) noexcept
-
-        : mCapacity(Allocator::GetNewCapacity(end - begin)),
+           const VectorIterator<T>& end, Allocator allocator = Allocator()) noexcept
+        : Allocator(std::move(allocator)),
+          mCapacity(Allocator::GetNewCapacity(end - begin)),
           mElemCount(end - begin),
           mHead(Allocator::Allocate(mCapacity))
     {
@@ -57,7 +59,8 @@ class Vector
 
     // TODO: add move constructor for different allocators
     Vector(Vector&& other) noexcept
-        : mCapacity(other.mCapacity),
+        : Allocator(std::move(other)),
+          mCapacity(other.mCapacity),
           mElemCount(other.mElemCount),
           mHead(other.mHead)
     {

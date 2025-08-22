@@ -1,11 +1,11 @@
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
+
 #include <AllocatorLib/debugAllocator.hpp>
 #include <AllocatorLib/heapAllocator.hpp>
 #include <CommonTestLib/dummy.hpp>
 #include <CommonTestLib/dummyTracker.hpp>
 #include <VectorLib/vector.hpp>
-
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
 
 namespace Moon::Test
 {
@@ -25,11 +25,9 @@ class VectorFixture : public ::testing::Test
         Dummy::tracker = dummyTracker;
     }
 
-
     void TearDown() override
     {
-
-    EXPECT_NO_THROW(DebugAllocator<Dummy>::ReportLeaks());
+        EXPECT_NO_THROW(DebugAllocator<Dummy>::ReportLeaks());
         delete dummyTracker;
         Dummy::tracker = nullptr;
     }
@@ -315,9 +313,9 @@ TEST_F(VectorFixture, WHEN_many_elements_are_pushed_and_popped_THEN_no_leaks)
     EXPECT_EQ(vector.Size(), 100);
 }
 
-
-TEST_F(VectorFixture,
-       WHEN_constructor_is_called_with_iterator_THEN_elements_are_copied_properly)
+TEST_F(
+    VectorFixture,
+    WHEN_constructor_is_called_with_iterator_THEN_elements_are_copied_properly)
 {
     DebugVector<Dummy> vector1;
     vector1.PushBack(Dummy(1));
@@ -331,7 +329,9 @@ TEST_F(VectorFixture,
     BlockExpectations();
 }
 
-TEST_F(VectorFixture, WHEN_constructor_is_called_with_vector_of_different_allocator_THEN_elements_are_copied_properly)
+TEST_F(
+    VectorFixture,
+    WHEN_constructor_is_called_with_vector_of_different_allocator_THEN_elements_are_copied_properly)
 {
     DebugVector<Dummy> vector1;
     vector1.PushBack(Dummy(1));
@@ -345,8 +345,9 @@ TEST_F(VectorFixture, WHEN_constructor_is_called_with_vector_of_different_alloca
     BlockExpectations();
 }
 
-
-TEST_F(VectorFixture, WHEN_copy_assignment_is_called_with_vector_of_different_allocator_THEN_elements_are_copied_properly)
+TEST_F(
+    VectorFixture,
+    WHEN_copy_assignment_is_called_with_vector_of_different_allocator_THEN_elements_are_copied_properly)
 {
     DebugVector<Dummy> vector1;
     vector1.PushBack(Dummy(1));

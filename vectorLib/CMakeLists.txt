@@ -9,3 +9,4 @@ depend_and_link(VectorLib
 
 add_subdirectory(test)
 add_subdirectory(perfTest)
+add_subdirectory(testApp)

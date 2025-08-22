@@ -1,0 +1,17 @@
+add_executable(SharedMemoryVectorConsumerApp
+   sharedMemoryVectorConsumerApp.cpp 
+)
+
+depend_and_link(SharedMemoryVectorConsumerApp
+   VectorLib
+   AllocatorLib
+)
+
+add_executable(SharedMemoryVectorProducerApp
+   sharedMemoryVectorProducerApp.cpp 
+)
+
+depend_and_link(SharedMemoryVectorProducerApp
+   VectorLib
+   AllocatorLib
+)

@@ -1,5 +1,4 @@
 #pragma once
-
 #include <VectorLib/vectorIterator.hpp>
 #include <cassert>
 #include <stdexcept>
@@ -14,9 +13,9 @@ void Vector<T, Allocator>::EmplaceBack(Args&&... args)
 {
     if (mElemCount == mCapacity)
     {
-        Reallocate(Allocator::GetNewCapacity(mElemCount));
+        Reallocate(this->Allocator::GetNewCapacity(mElemCount));
     }
-    Allocator::Construct(mHead + mElemCount, std::forward<Args>(args)...);
+    this->Allocator::Construct(mHead + mElemCount, std::forward<Args>(args)...);
     ++mElemCount;
 }
 
@@ -25,7 +24,7 @@ void Vector<T, Allocator>::Reserve(size_t size)
 {
     if (size > mCapacity)
     {
-        Reallocate(Allocator::GetNewCapacity(size));
+        Reallocate(this->Allocator::GetNewCapacity(size));
     }
 }
 
@@ -34,10 +33,10 @@ void Vector<T, Allocator>::PushBack(const T& elem)
 {
     if (mElemCount == mCapacity)
     {
-        Reallocate(Allocator::GetNewCapacity(mElemCount));
+        Reallocate(this->Allocator::GetNewCapacity(mElemCount));
     }
 
-    Allocator::Construct(mHead + mElemCount, elem);
+    this->Allocator::Construct(mHead + mElemCount, elem);
     ++mElemCount;
 }
 
@@ -46,10 +45,10 @@ void Vector<T, Allocator>::PushBack(T&& elem)
 {
     if (mElemCount == mCapacity)
     {
-        Reallocate(Allocator::GetNewCapacity(mElemCount));
+        Reallocate(this->Allocator::GetNewCapacity(mElemCount));
     }
 
-    Allocator::Construct(mHead + mElemCount, std::move(elem));
+    this->Allocator::Construct(mHead + mElemCount, std::move(elem));
     ++mElemCount;
 }
 
@@ -60,7 +59,7 @@ void Vector<T, Allocator>::PopBack()
     {
         throw std::runtime_error("PopBack(): empty vector cannot be popped");
     }
-    Allocator::Destruct(mHead + mElemCount - 1);
+    this->Allocator::Destruct(mHead + mElemCount - 1);
     --mElemCount;
 }
 
@@ -69,7 +68,7 @@ void Vector<T, Allocator>::Clear()
 {
     for (int i = 0; i < mElemCount; ++i)
     {
-        Allocator::Destruct(mHead + i);
+        this->Allocator::Destruct(mHead + i);
     }
     mElemCount = 0;
 }
@@ -123,15 +122,15 @@ void Vector<T, Allocator>::Reallocate(size_t newCapacity, size_t startOffset)
 {
     assert(startOffset + mElemCount <= newCapacity &&
            "Reallocate(): Impl error");
-    T* newHead = Allocator::Allocate(newCapacity);
+    T* newHead = this->Allocator::Allocate(newCapacity);
 
     for (int i = 0; i < mElemCount; ++i)
     {
-        Allocator::Construct(newHead + i + startOffset, std::move(mHead[i]));
-        Allocator::Destruct(mHead + i);
+        this->Allocator::Construct(newHead + i + startOffset, std::move(mHead[i]));
+        this->Allocator::Destruct(mHead + i);
     }
 
-    Allocator::Deallocate(mHead);
+    this->Allocator::Deallocate(mHead);
 
     mHead = newHead;
     mCapacity = newCapacity;
@@ -140,18 +139,19 @@ void Vector<T, Allocator>::Reallocate(size_t newCapacity, size_t startOffset)
 template <typename T, typename Allocator>
 void Vector<T, Allocator>::AssignFrom(const Vector& other)
 {
+    // TODO: figure out how to assign allocators
     Clear();
-    Allocator::Deallocate(mHead);
+    this->Allocator::Deallocate(mHead);
     if (mCapacity < other.mElemCount)
     {
-        const size_t newCapacity = Allocator::GetNewCapacity(other.mElemCount);
-        mHead = Allocator::Allocate(newCapacity);
+        const size_t newCapacity = this->Allocator::GetNewCapacity(other.mElemCount);
+        mHead = this->Allocator::Allocate(newCapacity);
         mCapacity = newCapacity;
     }
 
     for (int i = 0; i < other.mElemCount; ++i)
     {
-        Allocator::Construct(mHead + i, other.mHead[i]);
+        this->Allocator::Construct(mHead + i, other.mHead[i]);
     }
     mElemCount = other.mElemCount;
 }

@@ -1,0 +1,8 @@
+add_static_library(MapLib
+   hashmap.cpp
+)
+
+add_subdirectory(test)
+
+
+
