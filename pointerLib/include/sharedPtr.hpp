@@ -1,37 +1,33 @@
 #pragma once
 
-#include <atomic>
+#include <PointerLib/controlBlock.hpp>
 #include <cstddef>
 #include <utility>
 
 namespace Moon
 {
-
 template <typename T>
 class SharedPtr
 {
-   private:
-    struct ControlBlock
-    {
-        std::atomic<size_t> mReferenceCount;
-        void (*mDeleter)(T* obj, ControlBlock* controlBlock);
-
-        ControlBlock()
-            : mReferenceCount(1),
-              mDeleter(
-                  [](T* obj, ControlBlock* controlBlock)
-                  {
-                      delete controlBlock;
-                      delete obj;
-                  })
-        {
-        }
-    };
+    using ControlBlock = ControlBlock<T>;
 
    public:
     SharedPtr(T* ptr = nullptr)
         : mPtr(ptr), mControlBlock(ptr ? new ControlBlock() : nullptr)
     {
+        if (mControlBlock)
+        {
+            mControlBlock->mReferenceCount.store(1);
+        }
+    }
+
+    SharedPtr(T* ptr, ControlBlock* controlBlock)
+        : mPtr(ptr), mControlBlock(controlBlock)
+    {
+        if (mControlBlock)
+        {
+            ++mControlBlock->mReferenceCount;
+        }
     }
 
     SharedPtr(const SharedPtr& other)
@@ -109,6 +105,16 @@ class SharedPtr
         return mControlBlock ? mControlBlock->mReferenceCount.load() : 0;
     }
 
+    size_t WeakCount() const
+    {
+        return mControlBlock ? mControlBlock->mWeakCount.load() : 0;
+    }
+
+    ControlBlock* GetControlBlock() const
+    {
+        return mControlBlock;
+    }
+
     void Reset(T* ptr = nullptr)
     {
         Release();
@@ -141,10 +147,11 @@ class SharedPtr
         Combined* block = new Combined();
         new (block->object) T(std::forward<Args>(args)...);
 
-        block->mDeleter = [](T* obj, ControlBlock* controlBlock)
+        block->mObjectDeleter = [](T* obj) { obj->~T(); };
+
+        block->mControlBlockDeleter = [](ControlBlock* controlBlock)
         {
             auto combined = static_cast<Combined*>(controlBlock);
-            obj->~T();
             delete combined;
         };
 
@@ -152,16 +159,15 @@ class SharedPtr
     }
 
    private:
-    SharedPtr(T* ptr, ControlBlock* controlBlock)
-        : mPtr(ptr), mControlBlock(controlBlock)
-    {
-    }
-
     void Release()
     {
         if (mControlBlock && --mControlBlock->mReferenceCount == 0)
         {
-            mControlBlock->mDeleter(mPtr, mControlBlock);
+            mControlBlock->mObjectDeleter(mPtr);
+            if (mControlBlock->mWeakCount == 0)
+            {
+                mControlBlock->mControlBlockDeleter(mControlBlock);
+            }
         }
 
         mPtr = nullptr;

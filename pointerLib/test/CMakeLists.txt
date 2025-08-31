@@ -3,6 +3,7 @@ find_package(GTest REQUIRED)
 add_test_executable(PointerTest
     uniquePtrTests.cpp
     sharedPtrTests.cpp
+    weakPtrTests.cpp
 )
 
 depend_and_link(PointerTest
