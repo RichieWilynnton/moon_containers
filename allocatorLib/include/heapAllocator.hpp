@@ -10,8 +10,6 @@ template <typename T>
 class HeapAllocator
 {
    public:
-    // TODO : implement this
-    static constexpr size_t STARTING_CAPACITY = 1;
     static T* Allocate(size_t size);
 
     static void Deallocate(T*& ptr);
@@ -22,6 +20,10 @@ class HeapAllocator
     static void Destruct(T* ptr) noexcept;
 
     static size_t GetNewCapacity(const size_t numOfElems) noexcept;
+    static size_t GetStartingCapacity() noexcept
+    {
+        return 1;
+    }
 };
 }  // namespace Moon
 #include <AllocatorLib/heapAllocator.ipp>

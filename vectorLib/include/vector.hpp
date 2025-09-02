@@ -15,7 +15,7 @@ class Vector : Allocator
    public:
     Vector(Allocator allocator = Allocator()) noexcept
         : Allocator(std::move(allocator)),
-          mCapacity(Allocator::STARTING_CAPACITY),
+          mCapacity(Allocator::GetStartingCapacity()),
           mElemCount(0),
           mHead(Allocator::Allocate(mCapacity))
     {
@@ -144,4 +144,4 @@ class Vector : Allocator
 
 }  // namespace Moon
 
-#include <vectorLib/vector.ipp>
+#include <VectorLib/vector.ipp>

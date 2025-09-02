@@ -1,6 +1,6 @@
 add_static_library(VectorLib
-vector.cpp
-vectorIterator.cpp
+    vector.cpp
+    vectorIterator.cpp
 )
 
 depend_and_link(VectorLib
@@ -9,4 +9,3 @@ depend_and_link(VectorLib
 
 add_subdirectory(test)
 add_subdirectory(perfTest)
-add_subdirectory(testApp)

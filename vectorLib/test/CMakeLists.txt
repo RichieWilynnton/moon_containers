@@ -1,4 +1,5 @@
 find_package(GTest REQUIRED)
+
 add_test_executable(VectorTest
     vectorTests.cpp
     vectorIteratorTests.cpp

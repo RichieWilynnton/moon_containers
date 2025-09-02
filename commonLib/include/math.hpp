@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
+
 namespace Moon::Util
 {
 
@@ -29,6 +31,26 @@ class Math
             power <<= 1;
         }
         return power >> 1;
+    }
+
+    template <typename T>
+    static T* AlignPtr(T* ptr, const size_t alignment)
+    {
+        const auto ptrInt = reinterpret_cast<uintptr_t>(ptr);
+        const auto offset = ptrInt % alignment;
+        if (offset == 0)
+            return reinterpret_cast<T*>(ptr);
+        const auto adjustment = alignment - offset;
+        return reinterpret_cast<T*>(ptrInt + adjustment);
+    }
+
+    static size_t AlignSize(const size_t size, const size_t alignment)
+    {
+        const auto offset = size % alignment;
+        if (offset == 0)
+            return size;
+        const auto padding = alignment - offset;
+        return size + padding;
     }
 };
 }  // namespace Moon::Util

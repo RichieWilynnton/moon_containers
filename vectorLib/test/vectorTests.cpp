@@ -135,7 +135,7 @@ TEST_F(
     WHEN_vector_reallocation_is_triggered_THEN_no_copies_are_made_AND_no_destructors_are_called)
 {
     DebugVector<Dummy> vector;
-    const size_t startingCapacity = HeapAllocator<Dummy>::STARTING_CAPACITY;
+    const size_t startingCapacity = HeapAllocator<Dummy>::GetStartingCapacity();
 
     for (int i = 0; i < startingCapacity; ++i)
     {
