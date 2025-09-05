@@ -12,24 +12,22 @@ class ArenaAllocator
    public:
     ArenaAllocator(Arena& arena) : mArena(arena) {}
 
-    static T* Allocate(size_t size);
+    T* Allocate(size_t size);
 
-    static void Deallocate(T*& ptr);
+    void Deallocate(T*& ptr);
 
     template <typename... Args>
-    static void Construct(T* ptr, Args&&... args);
+    void Construct(T* ptr, Args&&... args);
 
-    static void Destruct(T* ptr) noexcept;
+    void Destruct(T* ptr) noexcept;
 
-    static size_t GetNewCapacity(const size_t numOfElems) noexcept;
+    size_t GetNewCapacity(const size_t numOfElems) noexcept;
 
-    size_t GetStartingCapacity() const noexcept
-    {
-        return mArena.GetCapacity();
-    }
+    size_t GetStartingCapacity() const noexcept;
 
    private:
     Arena& mArena;
+    ArenaChunk* mCurrentChunk = nullptr;
 };
 }  // namespace Moon
 

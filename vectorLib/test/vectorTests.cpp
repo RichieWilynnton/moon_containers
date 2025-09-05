@@ -132,20 +132,21 @@ TEST_F(VectorFixture, WHEN_elements_are_present_THEN_top_returns_last_element)
 
 TEST_F(
     VectorFixture,
-    WHEN_vector_reallocation_is_triggered_THEN_no_copies_are_made_AND_no_destructors_are_called)
+    WHEN_vector_reallocation_is_triggered_THEN_no_copies_are_made_AND_destructors_are_called)
 {
     DebugVector<Dummy> vector;
-    const size_t startingCapacity = HeapAllocator<Dummy>::GetStartingCapacity();
+    const size_t startingCapacity = DebugAllocator<Dummy>::GetStartingCapacity();
 
     for (int i = 0; i < startingCapacity; ++i)
     {
         vector.PushBack(Dummy(i));
     }
 
-    EXPECT_CALL(*dummyTracker, MoveConstructor()).Times(startingCapacity + 1);
-    EXPECT_CALL(*dummyTracker, Destructor()).Times(startingCapacity + 1);
+    EXPECT_CALL(*dummyTracker, MoveConstructor()).Times(startingCapacity);
+    EXPECT_CALL(*dummyTracker, Destructor()).Times(startingCapacity);
 
-    vector.PushBack(Dummy(42));
+    auto dummy = Dummy(42);
+    vector.PushBack(dummy);
 
     BlockExpectations();
 }

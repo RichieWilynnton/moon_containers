@@ -3,7 +3,7 @@ find_package(Boost 1.88.0 REQUIRED)
 add_static_library(AllocatorLib
     heapAllocator.cpp
     debugAllocator.cpp
-    arenaAllocator.cpp
+    # arenaAllocator.cpp
 )
 
 depend_and_link(AllocatorLib
