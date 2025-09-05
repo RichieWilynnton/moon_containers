@@ -103,7 +103,7 @@ bool ArenaMemoryBlock::CanFit(const size_t requestedSize)
 size_t ArenaMemoryBlock::CalcTotalAllocationSize(const size_t requestedSize)
 {
     const auto totalSize =
-        Util::Math::AlignSize(requestedSize + sizeof(ArenaChunkHeader), 64);
+        Util::Math::AlignSize(requestedSize + sizeof(ArenaChunkHeader), SIZE_ALIGNMENT);
     return totalSize;
 }
 

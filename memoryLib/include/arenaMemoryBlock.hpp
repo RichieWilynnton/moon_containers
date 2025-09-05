@@ -34,6 +34,8 @@ struct ArenaMemoryBlock
 
     // Total size = requested size + padding (extra size given to chunk) + header size
     static size_t CalcTotalAllocationSize(const size_t requestedSize);
+public:
+    static constexpr uint64_t SIZE_ALIGNMENT = 64;
 
    private:
     std::byte* mStart;

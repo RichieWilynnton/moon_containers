@@ -10,7 +10,7 @@ template <typename T>
 class ArenaAllocator
 {
    public:
-    ArenaAllocator(Arena& arena) : mArena(arena) {}
+    ArenaAllocator(Arena* arena) : mArena(arena) {}
 
     T* Allocate(size_t size);
 
@@ -26,7 +26,7 @@ class ArenaAllocator
     size_t GetStartingCapacity() const noexcept;
 
    private:
-    Arena& mArena;
+    Arena* mArena;
     ArenaChunk* mCurrentChunk = nullptr;
 };
 }  // namespace Moon
